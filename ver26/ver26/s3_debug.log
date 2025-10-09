@@ -1,0 +1,576 @@
+[2025-09-25 22:59:14] === НАЧАЛО ЗАГРУЗКИ ВИДЕО ===
+[2025-09-25 22:59:14] FILE INFO: name=Это шикарный момент правдаДорама Большая мышьБолтун [get-save.com] (1).mp4, size=538925, type=video/mp4, tmp_name=/tmp/phplVowHe
+[2025-09-25 22:59:14] FILE CHECK: fileName=Это шикарный момент правдаДорама Большая мышьБолтун [get-save.com] (1).mp4, extension=mp4
+[2025-09-25 22:59:14] METADATA: title=Болтун, series=1, seasons=1
+[2025-09-25 22:59:14] === НАЧИНАЕМ ЗАГРУЗКУ В S3 ===
+[2025-09-25 22:59:14] ORIGINAL FILENAME: Это шикарный момент правдаДорама Большая мышьБолтун [get-save.com] (1).mp4
+[2025-09-25 22:59:14] SAFE FILENAME: Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun_get-save_com_1.mp4
+[2025-09-25 22:59:14] S3 PARAMS: safeFileName=Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun_get-save_com_1.mp4, contentType=video/mp4, filePath=/tmp/phplVowHe, fileSize=538925
+[2025-09-25 22:59:14] S3Client: === НАЧАЛО ЗАГРУЗКИ В S3CLIENT ===
+[2025-09-25 22:59:14] S3Client: Параметры: localPath=/tmp/phplVowHe, s3Name=Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun_get-save_com_1.mp4, contentType=video/mp4
+[2025-09-25 22:59:14] S3Client: Файл прочитан: размер=538925, contentType=video/mp4
+[2025-09-25 22:59:14] S3Client: Безопасное имя файла: Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun_get-save_com_1.mp4
+[2025-09-25 22:59:14] S3Client: Время: date=20250925T195914Z, shortDate=20250925
+[2025-09-25 22:59:14] S3Client: URL компоненты: host=dorama-shorts.s3.regru.cloud, path=/Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun_get-save_com_1.mp4, safeFileName=Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun_get-save_com_1.mp4
+[2025-09-25 22:59:14] S3Client: Заголовки до подписи: {"Host":"dorama-shorts.s3.regru.cloud","x-amz-date":"20250925T195914Z","x-amz-content-sha256":"25692d851765f36d71ab0624b81de91b6940e9903a3b411932f873a12c16e680","x-amz-acl":"public-read","Content-Type":"video\/mp4","Content-Length":538925}
+[2025-09-25 22:59:14] S3Client: === СОЗДАНИЕ ПОДПИСИ ===
+[2025-09-25 22:59:14] S3Client: Базовые параметры: method=PUT, uri=/Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun_get-save_com_1.mp4, service=s3
+[2025-09-25 22:59:14] S3Client: Canonical headers:
+content-length:538925
+content-type:video/mp4
+host:dorama-shorts.s3.regru.cloud
+x-amz-acl:public-read
+x-amz-content-sha256:25692d851765f36d71ab0624b81de91b6940e9903a3b411932f873a12c16e680
+x-amz-date:20250925T195914Z
+
+[2025-09-25 22:59:14] S3Client: Signed headers: content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date
+[2025-09-25 22:59:14] S3Client: Canonical request:
+PUT\n
+/Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun_get-save_com_1.mp4\n
+\n
+content-length:538925\n
+content-type:video/mp4\n
+host:dorama-shorts.s3.regru.cloud\n
+x-amz-acl:public-read\n
+x-amz-content-sha256:25692d851765f36d71ab0624b81de91b6940e9903a3b411932f873a12c16e680\n
+x-amz-date:20250925T195914Z\n
+\n
+content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date\n
+25692d851765f36d71ab0624b81de91b6940e9903a3b411932f873a12c16e680
+[2025-09-25 22:59:14] S3Client: Credential scope: 20250925/ru-1/s3/aws4_request
+[2025-09-25 22:59:14] S3Client: String to sign:
+AWS4-HMAC-SHA256\n
+20250925T195914Z\n
+20250925/ru-1/s3/aws4_request\n
+334b7888cd5cf8b4422bc9afae85ee7f18685cb79f7098a887c5f5c2ead32eb8
+[2025-09-25 22:59:14] S3Client: Финальная подпись: AWS4-HMAC-SHA256 Credential=03H86PL3LMB9M12SHAGQ/20250925/ru-1/s3/aws4_request, SignedHeaders=content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date, Signature=2dc1386c2ccb71afb50f56dc1d37afd91228723bc6042320a36eecc405b4011c
+[2025-09-25 22:59:14] S3Client: === КОНЕЦ СОЗДАНИЯ ПОДПИСИ ===
+[2025-09-25 22:59:14] S3Client: Финальные заголовки: {"Host":"dorama-shorts.s3.regru.cloud","x-amz-date":"20250925T195914Z","x-amz-content-sha256":"25692d851765f36d71ab0624b81de91b6940e9903a3b411932f873a12c16e680","x-amz-acl":"public-read","Content-Type":"video\/mp4","Content-Length":538925,"Authorization":"AWS4-HMAC-SHA256 Credential=03H86PL3LMB9M12SHAGQ\/20250925\/ru-1\/s3\/aws4_request, SignedHeaders=content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date, Signature=2dc1386c2ccb71afb50f56dc1d37afd91228723bc6042320a36eecc405b4011c"}
+[2025-09-25 22:59:14] S3Client: Финальный URL: https://dorama-shorts.s3.regru.cloud/Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun_get-save_com_1.mp4
+[2025-09-25 22:59:14] S3Client: === ОТПРАВЛЯЕМ CURL ЗАПРОС ===
+[2025-09-25 22:59:14] S3Client: CURL результат: HTTP=200, error=
+[2025-09-25 22:59:14] S3Client: CURL ответ: 
+[2025-09-25 22:59:14] S3Client: === УСПЕШНАЯ ЗАГРУЗКА ===
+[2025-09-25 22:59:14] S3 RESULT: {"success":true,"url":"https:\/\/s3.regru.cloud\/dorama-shorts\/Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun_get-save_com_1.mp4","filename":"Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun_get-save_com_1.mp4"}
+[2025-09-25 22:59:14] === S3 ЗАГРУЗКА УСПЕШНА ===
+[2025-09-25 22:59:14] VIEW URL: https://s3.regru.cloud/dorama-shorts/Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun_get-save_com_1.mp4
+[2025-09-25 22:59:14] === НАЧИНАЕМ СОХРАНЕНИЕ В БД (MySQL) ===
+[2025-09-25 22:59:14] DB CONNECTION: успешно
+[2025-09-25 22:59:14] DUPLICATE CHECK: файл уникален
+[2025-09-25 22:59:14] DB INSERT: успешно, video_id=6
+[2025-09-25 22:59:14] === ЗАГРУЗКА ПОЛНОСТЬЮ ЗАВЕРШЕНА ===
+[2025-09-25 22:59:14] SUCCESS RESPONSE: {"success":true,"message":"\u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e","video_id":"6","s3_url":"https:\/\/s3.regru.cloud\/dorama-shorts\/Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun_get-save_com_1.mp4","filename":"Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun_get-save_com_1.mp4","original_name":"\u042d\u0442\u043e \u0448\u0438\u043a\u0430\u0440\u043d\u044b\u0438\u0306 \u043c\u043e\u043c\u0435\u043d\u0442 \u043f\u0440\u0430\u0432\u0434\u0430\u0414\u043e\u0440\u0430\u043c\u0430 \u0411\u043e\u043b\u044c\u0448\u0430\u044f \u043c\u044b\u0448\u044c\u0411\u043e\u043b\u0442\u0443\u043d [get-save.com] (1).mp4"}
+[2025-09-25 22:59:14] === КОНЕЦ ОБРАБОТКИ ===
+
+[2025-09-25 22:59:59] === НАЧАЛО ЗАГРУЗКИ ВИДЕО ===
+[2025-09-25 22:59:59] FILE INFO: name=2_сезон_вышел_🔥_#kdrama_#корея_#дорамы.mp4, size=3854767, type=video/mp4, tmp_name=/tmp/phpPi7Urq
+[2025-09-25 22:59:59] FILE CHECK: fileName=2_сезон_вышел_🔥_#kdrama_#корея_#дорамы.mp4, extension=mp4
+[2025-09-25 22:59:59] METADATA: title=Дорама 2 сезон, series=1, seasons=1
+[2025-09-25 22:59:59] === НАЧИНАЕМ ЗАГРУЗКУ В S3 ===
+[2025-09-25 22:59:59] ORIGINAL FILENAME: 2_сезон_вышел_🔥_#kdrama_#корея_#дорамы.mp4
+[2025-09-25 22:59:59] SAFE FILENAME: 2_sezon_vyshel_kdrama_koreya_doramy.mp4
+[2025-09-25 22:59:59] S3 PARAMS: safeFileName=2_sezon_vyshel_kdrama_koreya_doramy.mp4, contentType=video/mp4, filePath=/tmp/phpPi7Urq, fileSize=3854767
+[2025-09-25 22:59:59] S3Client: === НАЧАЛО ЗАГРУЗКИ В S3CLIENT ===
+[2025-09-25 22:59:59] S3Client: Параметры: localPath=/tmp/phpPi7Urq, s3Name=2_sezon_vyshel_kdrama_koreya_doramy.mp4, contentType=video/mp4
+[2025-09-25 22:59:59] S3Client: Файл прочитан: размер=3854767, contentType=video/mp4
+[2025-09-25 22:59:59] S3Client: Безопасное имя файла: 2_sezon_vyshel_kdrama_koreya_doramy.mp4
+[2025-09-25 22:59:59] S3Client: Время: date=20250925T195959Z, shortDate=20250925
+[2025-09-25 22:59:59] S3Client: URL компоненты: host=dorama-shorts.s3.regru.cloud, path=/2_sezon_vyshel_kdrama_koreya_doramy.mp4, safeFileName=2_sezon_vyshel_kdrama_koreya_doramy.mp4
+[2025-09-25 22:59:59] S3Client: Заголовки до подписи: {"Host":"dorama-shorts.s3.regru.cloud","x-amz-date":"20250925T195959Z","x-amz-content-sha256":"42fa8b2c6a9a1d71f45ccf1b9ddaedb726f6a0fc6abbd0e512c845d059d09fbf","x-amz-acl":"public-read","Content-Type":"video\/mp4","Content-Length":3854767}
+[2025-09-25 22:59:59] S3Client: === СОЗДАНИЕ ПОДПИСИ ===
+[2025-09-25 22:59:59] S3Client: Базовые параметры: method=PUT, uri=/2_sezon_vyshel_kdrama_koreya_doramy.mp4, service=s3
+[2025-09-25 22:59:59] S3Client: Canonical headers:
+content-length:3854767
+content-type:video/mp4
+host:dorama-shorts.s3.regru.cloud
+x-amz-acl:public-read
+x-amz-content-sha256:42fa8b2c6a9a1d71f45ccf1b9ddaedb726f6a0fc6abbd0e512c845d059d09fbf
+x-amz-date:20250925T195959Z
+
+[2025-09-25 22:59:59] S3Client: Signed headers: content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date
+[2025-09-25 22:59:59] S3Client: Canonical request:
+PUT\n
+/2_sezon_vyshel_kdrama_koreya_doramy.mp4\n
+\n
+content-length:3854767\n
+content-type:video/mp4\n
+host:dorama-shorts.s3.regru.cloud\n
+x-amz-acl:public-read\n
+x-amz-content-sha256:42fa8b2c6a9a1d71f45ccf1b9ddaedb726f6a0fc6abbd0e512c845d059d09fbf\n
+x-amz-date:20250925T195959Z\n
+\n
+content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date\n
+42fa8b2c6a9a1d71f45ccf1b9ddaedb726f6a0fc6abbd0e512c845d059d09fbf
+[2025-09-25 22:59:59] S3Client: Credential scope: 20250925/ru-1/s3/aws4_request
+[2025-09-25 22:59:59] S3Client: String to sign:
+AWS4-HMAC-SHA256\n
+20250925T195959Z\n
+20250925/ru-1/s3/aws4_request\n
+614aa7cdd5a2ab26ec45bbede4356ca4d54345f351572ea3eaafff2973e9f557
+[2025-09-25 22:59:59] S3Client: Финальная подпись: AWS4-HMAC-SHA256 Credential=03H86PL3LMB9M12SHAGQ/20250925/ru-1/s3/aws4_request, SignedHeaders=content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date, Signature=7f1323661eaf204085ffdb4c4e98f442e818d6305f90fa97c96e1e56cba35527
+[2025-09-25 22:59:59] S3Client: === КОНЕЦ СОЗДАНИЯ ПОДПИСИ ===
+[2025-09-25 22:59:59] S3Client: Финальные заголовки: {"Host":"dorama-shorts.s3.regru.cloud","x-amz-date":"20250925T195959Z","x-amz-content-sha256":"42fa8b2c6a9a1d71f45ccf1b9ddaedb726f6a0fc6abbd0e512c845d059d09fbf","x-amz-acl":"public-read","Content-Type":"video\/mp4","Content-Length":3854767,"Authorization":"AWS4-HMAC-SHA256 Credential=03H86PL3LMB9M12SHAGQ\/20250925\/ru-1\/s3\/aws4_request, SignedHeaders=content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date, Signature=7f1323661eaf204085ffdb4c4e98f442e818d6305f90fa97c96e1e56cba35527"}
+[2025-09-25 22:59:59] S3Client: Финальный URL: https://dorama-shorts.s3.regru.cloud/2_sezon_vyshel_kdrama_koreya_doramy.mp4
+[2025-09-25 22:59:59] S3Client: === ОТПРАВЛЯЕМ CURL ЗАПРОС ===
+[2025-09-25 23:00:00] S3Client: CURL результат: HTTP=200, error=
+[2025-09-25 23:00:00] S3Client: CURL ответ: 
+[2025-09-25 23:00:00] S3Client: === УСПЕШНАЯ ЗАГРУЗКА ===
+[2025-09-25 23:00:00] S3 RESULT: {"success":true,"url":"https:\/\/s3.regru.cloud\/dorama-shorts\/2_sezon_vyshel_kdrama_koreya_doramy.mp4","filename":"2_sezon_vyshel_kdrama_koreya_doramy.mp4"}
+[2025-09-25 23:00:00] === S3 ЗАГРУЗКА УСПЕШНА ===
+[2025-09-25 23:00:00] VIEW URL: https://s3.regru.cloud/dorama-shorts/2_sezon_vyshel_kdrama_koreya_doramy.mp4
+[2025-09-25 23:00:00] === НАЧИНАЕМ СОХРАНЕНИЕ В БД (MySQL) ===
+[2025-09-25 23:00:00] DB CONNECTION: успешно
+[2025-09-25 23:00:00] DUPLICATE CHECK: файл уникален
+[2025-09-25 23:00:00] DB INSERT: успешно, video_id=7
+[2025-09-25 23:00:00] === ЗАГРУЗКА ПОЛНОСТЬЮ ЗАВЕРШЕНА ===
+[2025-09-25 23:00:00] SUCCESS RESPONSE: {"success":true,"message":"\u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e","video_id":"7","s3_url":"https:\/\/s3.regru.cloud\/dorama-shorts\/2_sezon_vyshel_kdrama_koreya_doramy.mp4","filename":"2_sezon_vyshel_kdrama_koreya_doramy.mp4","original_name":"2_\u0441\u0435\u0437\u043e\u043d_\u0432\u044b\u0448\u0435\u043b_\ud83d\udd25_#kdrama_#\u043a\u043e\u0440\u0435\u044f_#\u0434\u043e\u0440\u0430\u043c\u044b.mp4"}
+[2025-09-25 23:00:00] === КОНЕЦ ОБРАБОТКИ ===
+
+[2025-09-25 23:00:41] === НАЧАЛО ЗАГРУЗКИ ВИДЕО ===
+[2025-09-25 23:00:41] FILE INFO: name=БЕРЕМЕННЫЙ МУЖЧИНА СЕЛ НА МЕСТО😂 #дорама (1).mp4, size=4165973, type=video/mp4, tmp_name=/tmp/php6ne2sJ
+[2025-09-25 23:00:41] FILE CHECK: fileName=БЕРЕМЕННЫЙ МУЖЧИНА СЕЛ НА МЕСТО😂 #дорама (1).mp4, extension=mp4
+[2025-09-25 23:00:41] METADATA: title=Беременные мужчина, series=1, seasons=1
+[2025-09-25 23:00:41] === НАЧИНАЕМ ЗАГРУЗКУ В S3 ===
+[2025-09-25 23:00:41] ORIGINAL FILENAME: БЕРЕМЕННЫЙ МУЖЧИНА СЕЛ НА МЕСТО😂 #дорама (1).mp4
+[2025-09-25 23:00:41] SAFE FILENAME: BEREMENNYI_MUZhChINA_SEL_NA_MESTO_dorama_1.mp4
+[2025-09-25 23:00:41] S3 PARAMS: safeFileName=BEREMENNYI_MUZhChINA_SEL_NA_MESTO_dorama_1.mp4, contentType=video/mp4, filePath=/tmp/php6ne2sJ, fileSize=4165973
+[2025-09-25 23:00:41] S3Client: === НАЧАЛО ЗАГРУЗКИ В S3CLIENT ===
+[2025-09-25 23:00:41] S3Client: Параметры: localPath=/tmp/php6ne2sJ, s3Name=BEREMENNYI_MUZhChINA_SEL_NA_MESTO_dorama_1.mp4, contentType=video/mp4
+[2025-09-25 23:00:41] S3Client: Файл прочитан: размер=4165973, contentType=video/mp4
+[2025-09-25 23:00:41] S3Client: Безопасное имя файла: BEREMENNYI_MUZhChINA_SEL_NA_MESTO_dorama_1.mp4
+[2025-09-25 23:00:41] S3Client: Время: date=20250925T200041Z, shortDate=20250925
+[2025-09-25 23:00:41] S3Client: URL компоненты: host=dorama-shorts.s3.regru.cloud, path=/BEREMENNYI_MUZhChINA_SEL_NA_MESTO_dorama_1.mp4, safeFileName=BEREMENNYI_MUZhChINA_SEL_NA_MESTO_dorama_1.mp4
+[2025-09-25 23:00:41] S3Client: Заголовки до подписи: {"Host":"dorama-shorts.s3.regru.cloud","x-amz-date":"20250925T200041Z","x-amz-content-sha256":"a044e2092f28861278c8789fefe32d2f7c39fc7b2333ef372247ff5b60543eef","x-amz-acl":"public-read","Content-Type":"video\/mp4","Content-Length":4165973}
+[2025-09-25 23:00:41] S3Client: === СОЗДАНИЕ ПОДПИСИ ===
+[2025-09-25 23:00:41] S3Client: Базовые параметры: method=PUT, uri=/BEREMENNYI_MUZhChINA_SEL_NA_MESTO_dorama_1.mp4, service=s3
+[2025-09-25 23:00:41] S3Client: Canonical headers:
+content-length:4165973
+content-type:video/mp4
+host:dorama-shorts.s3.regru.cloud
+x-amz-acl:public-read
+x-amz-content-sha256:a044e2092f28861278c8789fefe32d2f7c39fc7b2333ef372247ff5b60543eef
+x-amz-date:20250925T200041Z
+
+[2025-09-25 23:00:41] S3Client: Signed headers: content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date
+[2025-09-25 23:00:41] S3Client: Canonical request:
+PUT\n
+/BEREMENNYI_MUZhChINA_SEL_NA_MESTO_dorama_1.mp4\n
+\n
+content-length:4165973\n
+content-type:video/mp4\n
+host:dorama-shorts.s3.regru.cloud\n
+x-amz-acl:public-read\n
+x-amz-content-sha256:a044e2092f28861278c8789fefe32d2f7c39fc7b2333ef372247ff5b60543eef\n
+x-amz-date:20250925T200041Z\n
+\n
+content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date\n
+a044e2092f28861278c8789fefe32d2f7c39fc7b2333ef372247ff5b60543eef
+[2025-09-25 23:00:41] S3Client: Credential scope: 20250925/ru-1/s3/aws4_request
+[2025-09-25 23:00:41] S3Client: String to sign:
+AWS4-HMAC-SHA256\n
+20250925T200041Z\n
+20250925/ru-1/s3/aws4_request\n
+e6840b2a37fe8b3f62cb23a87f88b93ca9a8e6c4135ae9d308f346cb07982794
+[2025-09-25 23:00:41] S3Client: Финальная подпись: AWS4-HMAC-SHA256 Credential=03H86PL3LMB9M12SHAGQ/20250925/ru-1/s3/aws4_request, SignedHeaders=content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date, Signature=ce5631eac128ef4b307abd44f853a336c567d0c4b63769ea8c5ec5df9150c175
+[2025-09-25 23:00:41] S3Client: === КОНЕЦ СОЗДАНИЯ ПОДПИСИ ===
+[2025-09-25 23:00:41] S3Client: Финальные заголовки: {"Host":"dorama-shorts.s3.regru.cloud","x-amz-date":"20250925T200041Z","x-amz-content-sha256":"a044e2092f28861278c8789fefe32d2f7c39fc7b2333ef372247ff5b60543eef","x-amz-acl":"public-read","Content-Type":"video\/mp4","Content-Length":4165973,"Authorization":"AWS4-HMAC-SHA256 Credential=03H86PL3LMB9M12SHAGQ\/20250925\/ru-1\/s3\/aws4_request, SignedHeaders=content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date, Signature=ce5631eac128ef4b307abd44f853a336c567d0c4b63769ea8c5ec5df9150c175"}
+[2025-09-25 23:00:41] S3Client: Финальный URL: https://dorama-shorts.s3.regru.cloud/BEREMENNYI_MUZhChINA_SEL_NA_MESTO_dorama_1.mp4
+[2025-09-25 23:00:41] S3Client: === ОТПРАВЛЯЕМ CURL ЗАПРОС ===
+[2025-09-25 23:00:42] S3Client: CURL результат: HTTP=200, error=
+[2025-09-25 23:00:42] S3Client: CURL ответ: 
+[2025-09-25 23:00:42] S3Client: === УСПЕШНАЯ ЗАГРУЗКА ===
+[2025-09-25 23:00:42] S3 RESULT: {"success":true,"url":"https:\/\/s3.regru.cloud\/dorama-shorts\/BEREMENNYI_MUZhChINA_SEL_NA_MESTO_dorama_1.mp4","filename":"BEREMENNYI_MUZhChINA_SEL_NA_MESTO_dorama_1.mp4"}
+[2025-09-25 23:00:42] === S3 ЗАГРУЗКА УСПЕШНА ===
+[2025-09-25 23:00:42] VIEW URL: https://s3.regru.cloud/dorama-shorts/BEREMENNYI_MUZhChINA_SEL_NA_MESTO_dorama_1.mp4
+[2025-09-25 23:00:42] === НАЧИНАЕМ СОХРАНЕНИЕ В БД (MySQL) ===
+[2025-09-25 23:00:42] DB CONNECTION: успешно
+[2025-09-25 23:00:42] DUPLICATE CHECK: файл уникален
+[2025-09-25 23:00:42] DB INSERT: успешно, video_id=8
+[2025-09-25 23:00:42] === ЗАГРУЗКА ПОЛНОСТЬЮ ЗАВЕРШЕНА ===
+[2025-09-25 23:00:42] SUCCESS RESPONSE: {"success":true,"message":"\u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e","video_id":"8","s3_url":"https:\/\/s3.regru.cloud\/dorama-shorts\/BEREMENNYI_MUZhChINA_SEL_NA_MESTO_dorama_1.mp4","filename":"BEREMENNYI_MUZhChINA_SEL_NA_MESTO_dorama_1.mp4","original_name":"\u0411\u0415\u0420\u0415\u041c\u0415\u041d\u041d\u042b\u0418\u0306 \u041c\u0423\u0416\u0427\u0418\u041d\u0410 \u0421\u0415\u041b \u041d\u0410 \u041c\u0415\u0421\u0422\u041e\ud83d\ude02 #\u0434\u043e\u0440\u0430\u043c\u0430 (1).mp4"}
+[2025-09-25 23:00:42] === КОНЕЦ ОБРАБОТКИ ===
+
+[2025-09-25 23:01:47] === НАЧАЛО ЗАГРУЗКИ ВИДЕО ===
+[2025-09-25 23:01:47] FILE INFO: name=бывший_опозорил_перед_коллегами_#gangermans_#kdrama_#дорама_#сериал.mp4, size=3702371, type=video/mp4, tmp_name=/tmp/phpYE9kda
+[2025-09-25 23:01:47] FILE CHECK: fileName=бывший_опозорил_перед_коллегами_#gangermans_#kdrama_#дорама_#сериал.mp4, extension=mp4
+[2025-09-25 23:01:47] METADATA: title=Бывший, series=1, seasons=2
+[2025-09-25 23:01:47] === НАЧИНАЕМ ЗАГРУЗКУ В S3 ===
+[2025-09-25 23:01:47] ORIGINAL FILENAME: бывший_опозорил_перед_коллегами_#gangermans_#kdrama_#дорама_#сериал.mp4
+[2025-09-25 23:01:47] SAFE FILENAME: byvshii_opozoril_pered_kollegami_gangermans_kdrama_dorama_serial.mp4
+[2025-09-25 23:01:47] S3 PARAMS: safeFileName=byvshii_opozoril_pered_kollegami_gangermans_kdrama_dorama_serial.mp4, contentType=video/mp4, filePath=/tmp/phpYE9kda, fileSize=3702371
+[2025-09-25 23:01:47] S3Client: === НАЧАЛО ЗАГРУЗКИ В S3CLIENT ===
+[2025-09-25 23:01:47] S3Client: Параметры: localPath=/tmp/phpYE9kda, s3Name=byvshii_opozoril_pered_kollegami_gangermans_kdrama_dorama_serial.mp4, contentType=video/mp4
+[2025-09-25 23:01:47] S3Client: Файл прочитан: размер=3702371, contentType=video/mp4
+[2025-09-25 23:01:47] S3Client: Безопасное имя файла: byvshii_opozoril_pered_kollegami_gangermans_kdrama_dorama_serial.mp4
+[2025-09-25 23:01:47] S3Client: Время: date=20250925T200147Z, shortDate=20250925
+[2025-09-25 23:01:47] S3Client: URL компоненты: host=dorama-shorts.s3.regru.cloud, path=/byvshii_opozoril_pered_kollegami_gangermans_kdrama_dorama_serial.mp4, safeFileName=byvshii_opozoril_pered_kollegami_gangermans_kdrama_dorama_serial.mp4
+[2025-09-25 23:01:47] S3Client: Заголовки до подписи: {"Host":"dorama-shorts.s3.regru.cloud","x-amz-date":"20250925T200147Z","x-amz-content-sha256":"75179315892ea329e35e35a56e10161b0bc3956849e23341be1183d0d29016d7","x-amz-acl":"public-read","Content-Type":"video\/mp4","Content-Length":3702371}
+[2025-09-25 23:01:47] S3Client: === СОЗДАНИЕ ПОДПИСИ ===
+[2025-09-25 23:01:47] S3Client: Базовые параметры: method=PUT, uri=/byvshii_opozoril_pered_kollegami_gangermans_kdrama_dorama_serial.mp4, service=s3
+[2025-09-25 23:01:47] S3Client: Canonical headers:
+content-length:3702371
+content-type:video/mp4
+host:dorama-shorts.s3.regru.cloud
+x-amz-acl:public-read
+x-amz-content-sha256:75179315892ea329e35e35a56e10161b0bc3956849e23341be1183d0d29016d7
+x-amz-date:20250925T200147Z
+
+[2025-09-25 23:01:47] S3Client: Signed headers: content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date
+[2025-09-25 23:01:47] S3Client: Canonical request:
+PUT\n
+/byvshii_opozoril_pered_kollegami_gangermans_kdrama_dorama_serial.mp4\n
+\n
+content-length:3702371\n
+content-type:video/mp4\n
+host:dorama-shorts.s3.regru.cloud\n
+x-amz-acl:public-read\n
+x-amz-content-sha256:75179315892ea329e35e35a56e10161b0bc3956849e23341be1183d0d29016d7\n
+x-amz-date:20250925T200147Z\n
+\n
+content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date\n
+75179315892ea329e35e35a56e10161b0bc3956849e23341be1183d0d29016d7
+[2025-09-25 23:01:47] S3Client: Credential scope: 20250925/ru-1/s3/aws4_request
+[2025-09-25 23:01:47] S3Client: String to sign:
+AWS4-HMAC-SHA256\n
+20250925T200147Z\n
+20250925/ru-1/s3/aws4_request\n
+e82e2d247f49d7c9e4667103be2e92e45867f65104ed9cf28073ff9f8a0f3e10
+[2025-09-25 23:01:47] S3Client: Финальная подпись: AWS4-HMAC-SHA256 Credential=03H86PL3LMB9M12SHAGQ/20250925/ru-1/s3/aws4_request, SignedHeaders=content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date, Signature=67f429d59379a628ac011df0d44e65107169ce0abb3cd7bcf19ceb5da5030652
+[2025-09-25 23:01:47] S3Client: === КОНЕЦ СОЗДАНИЯ ПОДПИСИ ===
+[2025-09-25 23:01:47] S3Client: Финальные заголовки: {"Host":"dorama-shorts.s3.regru.cloud","x-amz-date":"20250925T200147Z","x-amz-content-sha256":"75179315892ea329e35e35a56e10161b0bc3956849e23341be1183d0d29016d7","x-amz-acl":"public-read","Content-Type":"video\/mp4","Content-Length":3702371,"Authorization":"AWS4-HMAC-SHA256 Credential=03H86PL3LMB9M12SHAGQ\/20250925\/ru-1\/s3\/aws4_request, SignedHeaders=content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date, Signature=67f429d59379a628ac011df0d44e65107169ce0abb3cd7bcf19ceb5da5030652"}
+[2025-09-25 23:01:47] S3Client: Финальный URL: https://dorama-shorts.s3.regru.cloud/byvshii_opozoril_pered_kollegami_gangermans_kdrama_dorama_serial.mp4
+[2025-09-25 23:01:47] S3Client: === ОТПРАВЛЯЕМ CURL ЗАПРОС ===
+[2025-09-25 23:01:48] S3Client: CURL результат: HTTP=200, error=
+[2025-09-25 23:01:48] S3Client: CURL ответ: 
+[2025-09-25 23:01:48] S3Client: === УСПЕШНАЯ ЗАГРУЗКА ===
+[2025-09-25 23:01:48] S3 RESULT: {"success":true,"url":"https:\/\/s3.regru.cloud\/dorama-shorts\/byvshii_opozoril_pered_kollegami_gangermans_kdrama_dorama_serial.mp4","filename":"byvshii_opozoril_pered_kollegami_gangermans_kdrama_dorama_serial.mp4"}
+[2025-09-25 23:01:48] === S3 ЗАГРУЗКА УСПЕШНА ===
+[2025-09-25 23:01:48] VIEW URL: https://s3.regru.cloud/dorama-shorts/byvshii_opozoril_pered_kollegami_gangermans_kdrama_dorama_serial.mp4
+[2025-09-25 23:01:48] === НАЧИНАЕМ СОХРАНЕНИЕ В БД (MySQL) ===
+[2025-09-25 23:01:48] DB CONNECTION: успешно
+[2025-09-25 23:01:48] DUPLICATE CHECK: файл уникален
+[2025-09-25 23:01:48] DB INSERT: успешно, video_id=9
+[2025-09-25 23:01:48] === ЗАГРУЗКА ПОЛНОСТЬЮ ЗАВЕРШЕНА ===
+[2025-09-25 23:01:48] SUCCESS RESPONSE: {"success":true,"message":"\u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e","video_id":"9","s3_url":"https:\/\/s3.regru.cloud\/dorama-shorts\/byvshii_opozoril_pered_kollegami_gangermans_kdrama_dorama_serial.mp4","filename":"byvshii_opozoril_pered_kollegami_gangermans_kdrama_dorama_serial.mp4","original_name":"\u0431\u044b\u0432\u0448\u0438\u0438\u0306_\u043e\u043f\u043e\u0437\u043e\u0440\u0438\u043b_\u043f\u0435\u0440\u0435\u0434_\u043a\u043e\u043b\u043b\u0435\u0433\u0430\u043c\u0438_#gangermans_#kdrama_#\u0434\u043e\u0440\u0430\u043c\u0430_#\u0441\u0435\u0440\u0438\u0430\u043b.mp4"}
+[2025-09-25 23:01:48] === КОНЕЦ ОБРАБОТКИ ===
+
+[2025-09-25 23:02:31] === НАЧАЛО ЗАГРУЗКИ ВИДЕО ===
+[2025-09-25 23:02:31] FILE INFO: name=Новинка 💗 #корея #kdrama #дорама.mp4, size=4015138, type=video/mp4, tmp_name=/tmp/phpB50p4t
+[2025-09-25 23:02:31] FILE CHECK: fileName=Новинка 💗 #корея #kdrama #дорама.mp4, extension=mp4
+[2025-09-25 23:02:31] METADATA: title=Новинка, series=1, seasons=1
+[2025-09-25 23:02:31] === НАЧИНАЕМ ЗАГРУЗКУ В S3 ===
+[2025-09-25 23:02:31] ORIGINAL FILENAME: Новинка 💗 #корея #kdrama #дорама.mp4
+[2025-09-25 23:02:31] SAFE FILENAME: Novinka_koreya_kdrama_dorama.mp4
+[2025-09-25 23:02:31] S3 PARAMS: safeFileName=Novinka_koreya_kdrama_dorama.mp4, contentType=video/mp4, filePath=/tmp/phpB50p4t, fileSize=4015138
+[2025-09-25 23:02:31] S3Client: === НАЧАЛО ЗАГРУЗКИ В S3CLIENT ===
+[2025-09-25 23:02:31] S3Client: Параметры: localPath=/tmp/phpB50p4t, s3Name=Novinka_koreya_kdrama_dorama.mp4, contentType=video/mp4
+[2025-09-25 23:02:31] S3Client: Файл прочитан: размер=4015138, contentType=video/mp4
+[2025-09-25 23:02:31] S3Client: Безопасное имя файла: Novinka_koreya_kdrama_dorama.mp4
+[2025-09-25 23:02:31] S3Client: Время: date=20250925T200231Z, shortDate=20250925
+[2025-09-25 23:02:31] S3Client: URL компоненты: host=dorama-shorts.s3.regru.cloud, path=/Novinka_koreya_kdrama_dorama.mp4, safeFileName=Novinka_koreya_kdrama_dorama.mp4
+[2025-09-25 23:02:31] S3Client: Заголовки до подписи: {"Host":"dorama-shorts.s3.regru.cloud","x-amz-date":"20250925T200231Z","x-amz-content-sha256":"039fe591f0032889738371c169e784f80f3af4c941cce0583ad5defc3cde4708","x-amz-acl":"public-read","Content-Type":"video\/mp4","Content-Length":4015138}
+[2025-09-25 23:02:31] S3Client: === СОЗДАНИЕ ПОДПИСИ ===
+[2025-09-25 23:02:31] S3Client: Базовые параметры: method=PUT, uri=/Novinka_koreya_kdrama_dorama.mp4, service=s3
+[2025-09-25 23:02:31] S3Client: Canonical headers:
+content-length:4015138
+content-type:video/mp4
+host:dorama-shorts.s3.regru.cloud
+x-amz-acl:public-read
+x-amz-content-sha256:039fe591f0032889738371c169e784f80f3af4c941cce0583ad5defc3cde4708
+x-amz-date:20250925T200231Z
+
+[2025-09-25 23:02:31] S3Client: Signed headers: content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date
+[2025-09-25 23:02:31] S3Client: Canonical request:
+PUT\n
+/Novinka_koreya_kdrama_dorama.mp4\n
+\n
+content-length:4015138\n
+content-type:video/mp4\n
+host:dorama-shorts.s3.regru.cloud\n
+x-amz-acl:public-read\n
+x-amz-content-sha256:039fe591f0032889738371c169e784f80f3af4c941cce0583ad5defc3cde4708\n
+x-amz-date:20250925T200231Z\n
+\n
+content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date\n
+039fe591f0032889738371c169e784f80f3af4c941cce0583ad5defc3cde4708
+[2025-09-25 23:02:31] S3Client: Credential scope: 20250925/ru-1/s3/aws4_request
+[2025-09-25 23:02:31] S3Client: String to sign:
+AWS4-HMAC-SHA256\n
+20250925T200231Z\n
+20250925/ru-1/s3/aws4_request\n
+378433eba209f910f10221f5c77ce96e3e01d64b15b90204e6c0f61cd0bc106c
+[2025-09-25 23:02:31] S3Client: Финальная подпись: AWS4-HMAC-SHA256 Credential=03H86PL3LMB9M12SHAGQ/20250925/ru-1/s3/aws4_request, SignedHeaders=content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date, Signature=db27198b60b76942461368b8e0c8fc66cac4d9d17d98be6b2ac1b0ba5da04734
+[2025-09-25 23:02:31] S3Client: === КОНЕЦ СОЗДАНИЯ ПОДПИСИ ===
+[2025-09-25 23:02:31] S3Client: Финальные заголовки: {"Host":"dorama-shorts.s3.regru.cloud","x-amz-date":"20250925T200231Z","x-amz-content-sha256":"039fe591f0032889738371c169e784f80f3af4c941cce0583ad5defc3cde4708","x-amz-acl":"public-read","Content-Type":"video\/mp4","Content-Length":4015138,"Authorization":"AWS4-HMAC-SHA256 Credential=03H86PL3LMB9M12SHAGQ\/20250925\/ru-1\/s3\/aws4_request, SignedHeaders=content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date, Signature=db27198b60b76942461368b8e0c8fc66cac4d9d17d98be6b2ac1b0ba5da04734"}
+[2025-09-25 23:02:31] S3Client: Финальный URL: https://dorama-shorts.s3.regru.cloud/Novinka_koreya_kdrama_dorama.mp4
+[2025-09-25 23:02:31] S3Client: === ОТПРАВЛЯЕМ CURL ЗАПРОС ===
+[2025-09-25 23:02:33] S3Client: CURL результат: HTTP=200, error=
+[2025-09-25 23:02:33] S3Client: CURL ответ: 
+[2025-09-25 23:02:33] S3Client: === УСПЕШНАЯ ЗАГРУЗКА ===
+[2025-09-25 23:02:33] S3 RESULT: {"success":true,"url":"https:\/\/s3.regru.cloud\/dorama-shorts\/Novinka_koreya_kdrama_dorama.mp4","filename":"Novinka_koreya_kdrama_dorama.mp4"}
+[2025-09-25 23:02:33] === S3 ЗАГРУЗКА УСПЕШНА ===
+[2025-09-25 23:02:33] VIEW URL: https://s3.regru.cloud/dorama-shorts/Novinka_koreya_kdrama_dorama.mp4
+[2025-09-25 23:02:33] === НАЧИНАЕМ СОХРАНЕНИЕ В БД (MySQL) ===
+[2025-09-25 23:02:33] DB CONNECTION: успешно
+[2025-09-25 23:02:33] DUPLICATE CHECK: файл уникален
+[2025-09-25 23:02:33] DB INSERT: успешно, video_id=10
+[2025-09-25 23:02:33] === ЗАГРУЗКА ПОЛНОСТЬЮ ЗАВЕРШЕНА ===
+[2025-09-25 23:02:33] SUCCESS RESPONSE: {"success":true,"message":"\u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e","video_id":"10","s3_url":"https:\/\/s3.regru.cloud\/dorama-shorts\/Novinka_koreya_kdrama_dorama.mp4","filename":"Novinka_koreya_kdrama_dorama.mp4","original_name":"\u041d\u043e\u0432\u0438\u043d\u043a\u0430 \ud83d\udc97 #\u043a\u043e\u0440\u0435\u044f #kdrama #\u0434\u043e\u0440\u0430\u043c\u0430.mp4"}
+[2025-09-25 23:02:33] === КОНЕЦ ОБРАБОТКИ ===
+
+[2025-09-25 23:03:18] === НАЧАЛО ЗАГРУЗКИ ВИДЕО ===
+[2025-09-25 23:03:18] FILE INFO: name=РАЗОБЛАЧИЛ ЗАДИРУ😨 #дорама #kdrama #dorama.mp4, size=5076290, type=video/mp4, tmp_name=/tmp/phplwwQWH
+[2025-09-25 23:03:18] FILE CHECK: fileName=РАЗОБЛАЧИЛ ЗАДИРУ😨 #дорама #kdrama #dorama.mp4, extension=mp4
+[2025-09-25 23:03:18] METADATA: title=Задира, series=1, seasons=1
+[2025-09-25 23:03:18] === НАЧИНАЕМ ЗАГРУЗКУ В S3 ===
+[2025-09-25 23:03:18] ORIGINAL FILENAME: РАЗОБЛАЧИЛ ЗАДИРУ😨 #дорама #kdrama #dorama.mp4
+[2025-09-25 23:03:18] SAFE FILENAME: RAZOBLAChIL_ZADIRU_dorama_kdrama_dorama.mp4
+[2025-09-25 23:03:18] S3 PARAMS: safeFileName=RAZOBLAChIL_ZADIRU_dorama_kdrama_dorama.mp4, contentType=video/mp4, filePath=/tmp/phplwwQWH, fileSize=5076290
+[2025-09-25 23:03:18] S3Client: === НАЧАЛО ЗАГРУЗКИ В S3CLIENT ===
+[2025-09-25 23:03:18] S3Client: Параметры: localPath=/tmp/phplwwQWH, s3Name=RAZOBLAChIL_ZADIRU_dorama_kdrama_dorama.mp4, contentType=video/mp4
+[2025-09-25 23:03:18] S3Client: Файл прочитан: размер=5076290, contentType=video/mp4
+[2025-09-25 23:03:18] S3Client: Безопасное имя файла: RAZOBLAChIL_ZADIRU_dorama_kdrama_dorama.mp4
+[2025-09-25 23:03:18] S3Client: Время: date=20250925T200318Z, shortDate=20250925
+[2025-09-25 23:03:18] S3Client: URL компоненты: host=dorama-shorts.s3.regru.cloud, path=/RAZOBLAChIL_ZADIRU_dorama_kdrama_dorama.mp4, safeFileName=RAZOBLAChIL_ZADIRU_dorama_kdrama_dorama.mp4
+[2025-09-25 23:03:18] S3Client: Заголовки до подписи: {"Host":"dorama-shorts.s3.regru.cloud","x-amz-date":"20250925T200318Z","x-amz-content-sha256":"916892f68134096cab5fa675bf98d5f473730dd40e72e9e90064f7f9d039c4f0","x-amz-acl":"public-read","Content-Type":"video\/mp4","Content-Length":5076290}
+[2025-09-25 23:03:18] S3Client: === СОЗДАНИЕ ПОДПИСИ ===
+[2025-09-25 23:03:18] S3Client: Базовые параметры: method=PUT, uri=/RAZOBLAChIL_ZADIRU_dorama_kdrama_dorama.mp4, service=s3
+[2025-09-25 23:03:18] S3Client: Canonical headers:
+content-length:5076290
+content-type:video/mp4
+host:dorama-shorts.s3.regru.cloud
+x-amz-acl:public-read
+x-amz-content-sha256:916892f68134096cab5fa675bf98d5f473730dd40e72e9e90064f7f9d039c4f0
+x-amz-date:20250925T200318Z
+
+[2025-09-25 23:03:18] S3Client: Signed headers: content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date
+[2025-09-25 23:03:18] S3Client: Canonical request:
+PUT\n
+/RAZOBLAChIL_ZADIRU_dorama_kdrama_dorama.mp4\n
+\n
+content-length:5076290\n
+content-type:video/mp4\n
+host:dorama-shorts.s3.regru.cloud\n
+x-amz-acl:public-read\n
+x-amz-content-sha256:916892f68134096cab5fa675bf98d5f473730dd40e72e9e90064f7f9d039c4f0\n
+x-amz-date:20250925T200318Z\n
+\n
+content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date\n
+916892f68134096cab5fa675bf98d5f473730dd40e72e9e90064f7f9d039c4f0
+[2025-09-25 23:03:18] S3Client: Credential scope: 20250925/ru-1/s3/aws4_request
+[2025-09-25 23:03:18] S3Client: String to sign:
+AWS4-HMAC-SHA256\n
+20250925T200318Z\n
+20250925/ru-1/s3/aws4_request\n
+a378278e9015804d70ff3f02acddc4b0d2907df904b327fda09c31b48853d314
+[2025-09-25 23:03:18] S3Client: Финальная подпись: AWS4-HMAC-SHA256 Credential=03H86PL3LMB9M12SHAGQ/20250925/ru-1/s3/aws4_request, SignedHeaders=content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date, Signature=f9d406fc8a07e12b86f56449747e37cec60dc830ffbc3769bcbccafacf15534e
+[2025-09-25 23:03:18] S3Client: === КОНЕЦ СОЗДАНИЯ ПОДПИСИ ===
+[2025-09-25 23:03:18] S3Client: Финальные заголовки: {"Host":"dorama-shorts.s3.regru.cloud","x-amz-date":"20250925T200318Z","x-amz-content-sha256":"916892f68134096cab5fa675bf98d5f473730dd40e72e9e90064f7f9d039c4f0","x-amz-acl":"public-read","Content-Type":"video\/mp4","Content-Length":5076290,"Authorization":"AWS4-HMAC-SHA256 Credential=03H86PL3LMB9M12SHAGQ\/20250925\/ru-1\/s3\/aws4_request, SignedHeaders=content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date, Signature=f9d406fc8a07e12b86f56449747e37cec60dc830ffbc3769bcbccafacf15534e"}
+[2025-09-25 23:03:18] S3Client: Финальный URL: https://dorama-shorts.s3.regru.cloud/RAZOBLAChIL_ZADIRU_dorama_kdrama_dorama.mp4
+[2025-09-25 23:03:18] S3Client: === ОТПРАВЛЯЕМ CURL ЗАПРОС ===
+[2025-09-25 23:03:18] S3Client: CURL результат: HTTP=200, error=
+[2025-09-25 23:03:18] S3Client: CURL ответ: 
+[2025-09-25 23:03:18] S3Client: === УСПЕШНАЯ ЗАГРУЗКА ===
+[2025-09-25 23:03:18] S3 RESULT: {"success":true,"url":"https:\/\/s3.regru.cloud\/dorama-shorts\/RAZOBLAChIL_ZADIRU_dorama_kdrama_dorama.mp4","filename":"RAZOBLAChIL_ZADIRU_dorama_kdrama_dorama.mp4"}
+[2025-09-25 23:03:18] === S3 ЗАГРУЗКА УСПЕШНА ===
+[2025-09-25 23:03:18] VIEW URL: https://s3.regru.cloud/dorama-shorts/RAZOBLAChIL_ZADIRU_dorama_kdrama_dorama.mp4
+[2025-09-25 23:03:18] === НАЧИНАЕМ СОХРАНЕНИЕ В БД (MySQL) ===
+[2025-09-25 23:03:18] DB CONNECTION: успешно
+[2025-09-25 23:03:18] DUPLICATE CHECK: файл уникален
+[2025-09-25 23:03:18] DB INSERT: успешно, video_id=11
+[2025-09-25 23:03:18] === ЗАГРУЗКА ПОЛНОСТЬЮ ЗАВЕРШЕНА ===
+[2025-09-25 23:03:18] SUCCESS RESPONSE: {"success":true,"message":"\u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e","video_id":"11","s3_url":"https:\/\/s3.regru.cloud\/dorama-shorts\/RAZOBLAChIL_ZADIRU_dorama_kdrama_dorama.mp4","filename":"RAZOBLAChIL_ZADIRU_dorama_kdrama_dorama.mp4","original_name":"\u0420\u0410\u0417\u041e\u0411\u041b\u0410\u0427\u0418\u041b \u0417\u0410\u0414\u0418\u0420\u0423\ud83d\ude28 #\u0434\u043e\u0440\u0430\u043c\u0430 #kdrama #dorama.mp4"}
+[2025-09-25 23:03:18] === КОНЕЦ ОБРАБОТКИ ===
+
+[2025-09-25 23:03:56] === НАЧАЛО ЗАГРУЗКИ ВИДЕО ===
+[2025-09-25 23:03:56] FILE INFO: name=соврал_сыну,_что_не_знал_о_нем_#gangermans_#дорама_#сериал_#фильм.mp4, size=4668237, type=video/mp4, tmp_name=/tmp/phpu1WwUj
+[2025-09-25 23:03:56] FILE CHECK: fileName=соврал_сыну,_что_не_знал_о_нем_#gangermans_#дорама_#сериал_#фильм.mp4, extension=mp4
+[2025-09-25 23:03:56] METADATA: title=Соврал, series=1, seasons=1
+[2025-09-25 23:03:56] === НАЧИНАЕМ ЗАГРУЗКУ В S3 ===
+[2025-09-25 23:03:56] ORIGINAL FILENAME: соврал_сыну,_что_не_знал_о_нем_#gangermans_#дорама_#сериал_#фильм.mp4
+[2025-09-25 23:03:56] SAFE FILENAME: sovral_synu_chto_ne_znal_o_nem_gangermans_dorama_serial_film.mp4
+[2025-09-25 23:03:56] S3 PARAMS: safeFileName=sovral_synu_chto_ne_znal_o_nem_gangermans_dorama_serial_film.mp4, contentType=video/mp4, filePath=/tmp/phpu1WwUj, fileSize=4668237
+[2025-09-25 23:03:56] S3Client: === НАЧАЛО ЗАГРУЗКИ В S3CLIENT ===
+[2025-09-25 23:03:56] S3Client: Параметры: localPath=/tmp/phpu1WwUj, s3Name=sovral_synu_chto_ne_znal_o_nem_gangermans_dorama_serial_film.mp4, contentType=video/mp4
+[2025-09-25 23:03:56] S3Client: Файл прочитан: размер=4668237, contentType=video/mp4
+[2025-09-25 23:03:56] S3Client: Безопасное имя файла: sovral_synu_chto_ne_znal_o_nem_gangermans_dorama_serial_film.mp4
+[2025-09-25 23:03:56] S3Client: Время: date=20250925T200356Z, shortDate=20250925
+[2025-09-25 23:03:56] S3Client: URL компоненты: host=dorama-shorts.s3.regru.cloud, path=/sovral_synu_chto_ne_znal_o_nem_gangermans_dorama_serial_film.mp4, safeFileName=sovral_synu_chto_ne_znal_o_nem_gangermans_dorama_serial_film.mp4
+[2025-09-25 23:03:56] S3Client: Заголовки до подписи: {"Host":"dorama-shorts.s3.regru.cloud","x-amz-date":"20250925T200356Z","x-amz-content-sha256":"f913f8dbf1dd6ce6b5a7edbd05647ff384c8881aa7c08f595866673a747fcc35","x-amz-acl":"public-read","Content-Type":"video\/mp4","Content-Length":4668237}
+[2025-09-25 23:03:56] S3Client: === СОЗДАНИЕ ПОДПИСИ ===
+[2025-09-25 23:03:56] S3Client: Базовые параметры: method=PUT, uri=/sovral_synu_chto_ne_znal_o_nem_gangermans_dorama_serial_film.mp4, service=s3
+[2025-09-25 23:03:56] S3Client: Canonical headers:
+content-length:4668237
+content-type:video/mp4
+host:dorama-shorts.s3.regru.cloud
+x-amz-acl:public-read
+x-amz-content-sha256:f913f8dbf1dd6ce6b5a7edbd05647ff384c8881aa7c08f595866673a747fcc35
+x-amz-date:20250925T200356Z
+
+[2025-09-25 23:03:56] S3Client: Signed headers: content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date
+[2025-09-25 23:03:56] S3Client: Canonical request:
+PUT\n
+/sovral_synu_chto_ne_znal_o_nem_gangermans_dorama_serial_film.mp4\n
+\n
+content-length:4668237\n
+content-type:video/mp4\n
+host:dorama-shorts.s3.regru.cloud\n
+x-amz-acl:public-read\n
+x-amz-content-sha256:f913f8dbf1dd6ce6b5a7edbd05647ff384c8881aa7c08f595866673a747fcc35\n
+x-amz-date:20250925T200356Z\n
+\n
+content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date\n
+f913f8dbf1dd6ce6b5a7edbd05647ff384c8881aa7c08f595866673a747fcc35
+[2025-09-25 23:03:56] S3Client: Credential scope: 20250925/ru-1/s3/aws4_request
+[2025-09-25 23:03:56] S3Client: String to sign:
+AWS4-HMAC-SHA256\n
+20250925T200356Z\n
+20250925/ru-1/s3/aws4_request\n
+d510c1854fd9c32ee24c85b370bc57e7015bb4cb7d5f5704e18ae4e9550f88c2
+[2025-09-25 23:03:56] S3Client: Финальная подпись: AWS4-HMAC-SHA256 Credential=03H86PL3LMB9M12SHAGQ/20250925/ru-1/s3/aws4_request, SignedHeaders=content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date, Signature=c2cf7395397459718d0a9c4a799fbd7db002bbaa440acf302ebb175b2b943276
+[2025-09-25 23:03:56] S3Client: === КОНЕЦ СОЗДАНИЯ ПОДПИСИ ===
+[2025-09-25 23:03:56] S3Client: Финальные заголовки: {"Host":"dorama-shorts.s3.regru.cloud","x-amz-date":"20250925T200356Z","x-amz-content-sha256":"f913f8dbf1dd6ce6b5a7edbd05647ff384c8881aa7c08f595866673a747fcc35","x-amz-acl":"public-read","Content-Type":"video\/mp4","Content-Length":4668237,"Authorization":"AWS4-HMAC-SHA256 Credential=03H86PL3LMB9M12SHAGQ\/20250925\/ru-1\/s3\/aws4_request, SignedHeaders=content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date, Signature=c2cf7395397459718d0a9c4a799fbd7db002bbaa440acf302ebb175b2b943276"}
+[2025-09-25 23:03:56] S3Client: Финальный URL: https://dorama-shorts.s3.regru.cloud/sovral_synu_chto_ne_znal_o_nem_gangermans_dorama_serial_film.mp4
+[2025-09-25 23:03:56] S3Client: === ОТПРАВЛЯЕМ CURL ЗАПРОС ===
+[2025-09-25 23:03:58] S3Client: CURL результат: HTTP=200, error=
+[2025-09-25 23:03:58] S3Client: CURL ответ: 
+[2025-09-25 23:03:58] S3Client: === УСПЕШНАЯ ЗАГРУЗКА ===
+[2025-09-25 23:03:58] S3 RESULT: {"success":true,"url":"https:\/\/s3.regru.cloud\/dorama-shorts\/sovral_synu_chto_ne_znal_o_nem_gangermans_dorama_serial_film.mp4","filename":"sovral_synu_chto_ne_znal_o_nem_gangermans_dorama_serial_film.mp4"}
+[2025-09-25 23:03:58] === S3 ЗАГРУЗКА УСПЕШНА ===
+[2025-09-25 23:03:58] VIEW URL: https://s3.regru.cloud/dorama-shorts/sovral_synu_chto_ne_znal_o_nem_gangermans_dorama_serial_film.mp4
+[2025-09-25 23:03:58] === НАЧИНАЕМ СОХРАНЕНИЕ В БД (MySQL) ===
+[2025-09-25 23:03:58] DB CONNECTION: успешно
+[2025-09-25 23:03:58] DUPLICATE CHECK: файл уникален
+[2025-09-25 23:03:58] DB INSERT: успешно, video_id=12
+[2025-09-25 23:03:58] === ЗАГРУЗКА ПОЛНОСТЬЮ ЗАВЕРШЕНА ===
+[2025-09-25 23:03:58] SUCCESS RESPONSE: {"success":true,"message":"\u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e","video_id":"12","s3_url":"https:\/\/s3.regru.cloud\/dorama-shorts\/sovral_synu_chto_ne_znal_o_nem_gangermans_dorama_serial_film.mp4","filename":"sovral_synu_chto_ne_znal_o_nem_gangermans_dorama_serial_film.mp4","original_name":"\u0441\u043e\u0432\u0440\u0430\u043b_\u0441\u044b\u043d\u0443,_\u0447\u0442\u043e_\u043d\u0435_\u0437\u043d\u0430\u043b_\u043e_\u043d\u0435\u043c_#gangermans_#\u0434\u043e\u0440\u0430\u043c\u0430_#\u0441\u0435\u0440\u0438\u0430\u043b_#\u0444\u0438\u043b\u044c\u043c.mp4"}
+[2025-09-25 23:03:58] === КОНЕЦ ОБРАБОТКИ ===
+
+[2025-09-25 23:21:31] === НАЧАЛО ЗАГРУЗКИ ВИДЕО ===
+[2025-09-25 23:21:31] FILE INFO: name=Это шикарный момент правдаДорама Большая мышьБолтун.mp4, size=538925, type=video/mp4, tmp_name=/tmp/phpIFJEIA
+[2025-09-25 23:21:31] FILE CHECK: fileName=Это шикарный момент правдаДорама Большая мышьБолтун.mp4, extension=mp4
+[2025-09-25 23:21:31] METADATA: title=Болтун, series=1, seasons=1
+[2025-09-25 23:21:31] === НАЧИНАЕМ ЗАГРУЗКУ В S3 ===
+[2025-09-25 23:21:31] ORIGINAL FILENAME: Это шикарный момент правдаДорама Большая мышьБолтун.mp4
+[2025-09-25 23:21:31] SAFE FILENAME: Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun.mp4
+[2025-09-25 23:21:31] S3 PARAMS: safeFileName=Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun.mp4, contentType=video/mp4, filePath=/tmp/phpIFJEIA, fileSize=538925
+[2025-09-25 23:21:31] S3Client: === НАЧАЛО ЗАГРУЗКИ В S3CLIENT ===
+[2025-09-25 23:21:31] S3Client: Параметры: localPath=/tmp/phpIFJEIA, s3Name=Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun.mp4, contentType=video/mp4
+[2025-09-25 23:21:31] S3Client: Файл прочитан: размер=538925, contentType=video/mp4
+[2025-09-25 23:21:31] S3Client: Безопасное имя файла: Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun.mp4
+[2025-09-25 23:21:31] S3Client: Время: date=20250925T202131Z, shortDate=20250925
+[2025-09-25 23:21:31] S3Client: URL компоненты: host=dorama-shorts.s3.regru.cloud, path=/Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun.mp4, safeFileName=Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun.mp4
+[2025-09-25 23:21:31] S3Client: Заголовки до подписи: {"Host":"dorama-shorts.s3.regru.cloud","x-amz-date":"20250925T202131Z","x-amz-content-sha256":"25692d851765f36d71ab0624b81de91b6940e9903a3b411932f873a12c16e680","x-amz-acl":"public-read","Content-Type":"video\/mp4","Content-Length":538925}
+[2025-09-25 23:21:31] S3Client: === СОЗДАНИЕ ПОДПИСИ ===
+[2025-09-25 23:21:31] S3Client: Базовые параметры: method=PUT, uri=/Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun.mp4, service=s3
+[2025-09-25 23:21:31] S3Client: Canonical headers:
+content-length:538925
+content-type:video/mp4
+host:dorama-shorts.s3.regru.cloud
+x-amz-acl:public-read
+x-amz-content-sha256:25692d851765f36d71ab0624b81de91b6940e9903a3b411932f873a12c16e680
+x-amz-date:20250925T202131Z
+
+[2025-09-25 23:21:31] S3Client: Signed headers: content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date
+[2025-09-25 23:21:31] S3Client: Canonical request:
+PUT\n
+/Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun.mp4\n
+\n
+content-length:538925\n
+content-type:video/mp4\n
+host:dorama-shorts.s3.regru.cloud\n
+x-amz-acl:public-read\n
+x-amz-content-sha256:25692d851765f36d71ab0624b81de91b6940e9903a3b411932f873a12c16e680\n
+x-amz-date:20250925T202131Z\n
+\n
+content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date\n
+25692d851765f36d71ab0624b81de91b6940e9903a3b411932f873a12c16e680
+[2025-09-25 23:21:31] S3Client: Credential scope: 20250925/ru-1/s3/aws4_request
+[2025-09-25 23:21:31] S3Client: String to sign:
+AWS4-HMAC-SHA256\n
+20250925T202131Z\n
+20250925/ru-1/s3/aws4_request\n
+99afcd60980bb49c4f03465baa232a445210a13fdb83d39667192c50d24aefd3
+[2025-09-25 23:21:31] S3Client: Финальная подпись: AWS4-HMAC-SHA256 Credential=03H86PL3LMB9M12SHAGQ/20250925/ru-1/s3/aws4_request, SignedHeaders=content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date, Signature=5392483098b35f6d5e43833c8ec09ab43888ff49a978c6e366d26596ebe93f80
+[2025-09-25 23:21:31] S3Client: === КОНЕЦ СОЗДАНИЯ ПОДПИСИ ===
+[2025-09-25 23:21:31] S3Client: Финальные заголовки: {"Host":"dorama-shorts.s3.regru.cloud","x-amz-date":"20250925T202131Z","x-amz-content-sha256":"25692d851765f36d71ab0624b81de91b6940e9903a3b411932f873a12c16e680","x-amz-acl":"public-read","Content-Type":"video\/mp4","Content-Length":538925,"Authorization":"AWS4-HMAC-SHA256 Credential=03H86PL3LMB9M12SHAGQ\/20250925\/ru-1\/s3\/aws4_request, SignedHeaders=content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date, Signature=5392483098b35f6d5e43833c8ec09ab43888ff49a978c6e366d26596ebe93f80"}
+[2025-09-25 23:21:31] S3Client: Финальный URL: https://dorama-shorts.s3.regru.cloud/Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun.mp4
+[2025-09-25 23:21:31] S3Client: === ОТПРАВЛЯЕМ CURL ЗАПРОС ===
+[2025-09-25 23:21:32] S3Client: CURL результат: HTTP=200, error=
+[2025-09-25 23:21:32] S3Client: CURL ответ: 
+[2025-09-25 23:21:32] S3Client: === УСПЕШНАЯ ЗАГРУЗКА ===
+[2025-09-25 23:21:32] S3 RESULT: {"success":true,"url":"https:\/\/s3.regru.cloud\/dorama-shorts\/Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun.mp4","filename":"Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun.mp4"}
+[2025-09-25 23:21:32] === S3 ЗАГРУЗКА УСПЕШНА ===
+[2025-09-25 23:21:32] VIEW URL: https://s3.regru.cloud/dorama-shorts/Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun.mp4
+[2025-09-25 23:21:32] === НАЧИНАЕМ СОХРАНЕНИЕ В БД (MySQL) ===
+[2025-09-25 23:21:32] DB CONNECTION: успешно
+[2025-09-25 23:21:32] DUPLICATE CHECK: файл уникален
+[2025-09-25 23:21:32] DB INSERT: успешно, video_id=13
+[2025-09-25 23:21:32] === ЗАГРУЗКА ПОЛНОСТЬЮ ЗАВЕРШЕНА ===
+[2025-09-25 23:21:32] SUCCESS RESPONSE: {"success":true,"message":"\u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e","video_id":"13","s3_url":"https:\/\/s3.regru.cloud\/dorama-shorts\/Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun.mp4","filename":"Eto_shikarnyi_moment_pravdaDorama_Bolshaya_myshBoltun.mp4","original_name":"\u042d\u0442\u043e \u0448\u0438\u043a\u0430\u0440\u043d\u044b\u0438\u0306 \u043c\u043e\u043c\u0435\u043d\u0442 \u043f\u0440\u0430\u0432\u0434\u0430\u0414\u043e\u0440\u0430\u043c\u0430 \u0411\u043e\u043b\u044c\u0448\u0430\u044f \u043c\u044b\u0448\u044c\u0411\u043e\u043b\u0442\u0443\u043d.mp4"}
+[2025-09-25 23:21:32] === КОНЕЦ ОБРАБОТКИ ===
+
+[2025-09-26 22:50:30] === НАЧАЛО ЗАГРУЗКИ ВИДЕО ===
+[2025-09-26 22:50:30] FILE INFO: name=РАЗОБЛАЧИЛ ЗАДИРУ.mp4, size=3475314, type=video/mp4, tmp_name=/tmp/phpy3jL2J
+[2025-09-26 22:50:30] FILE CHECK: fileName=РАЗОБЛАЧИЛ ЗАДИРУ.mp4, extension=mp4
+[2025-09-26 22:50:30] METADATA: title=задира 2, series=1, seasons=1
+[2025-09-26 22:50:30] === НАЧИНАЕМ ЗАГРУЗКУ В S3 ===
+[2025-09-26 22:50:30] ORIGINAL FILENAME: РАЗОБЛАЧИЛ ЗАДИРУ.mp4
+[2025-09-26 22:50:30] SAFE FILENAME: RAZOBLAChIL_ZADIRU.mp4
+[2025-09-26 22:50:30] S3 PARAMS: safeFileName=RAZOBLAChIL_ZADIRU.mp4, contentType=video/mp4, filePath=/tmp/phpy3jL2J, fileSize=3475314
+[2025-09-26 22:50:30] S3Client: === НАЧАЛО ЗАГРУЗКИ В S3CLIENT ===
+[2025-09-26 22:50:30] S3Client: Параметры: localPath=/tmp/phpy3jL2J, s3Name=RAZOBLAChIL_ZADIRU.mp4, contentType=video/mp4
+[2025-09-26 22:50:30] S3Client: Файл прочитан: размер=3475314, contentType=video/mp4
+[2025-09-26 22:50:30] S3Client: Безопасное имя файла: RAZOBLAChIL_ZADIRU.mp4
+[2025-09-26 22:50:30] S3Client: Время: date=20250926T195030Z, shortDate=20250926
+[2025-09-26 22:50:30] S3Client: URL компоненты: host=dorama-shorts.s3.regru.cloud, path=/RAZOBLAChIL_ZADIRU.mp4, safeFileName=RAZOBLAChIL_ZADIRU.mp4
+[2025-09-26 22:50:30] S3Client: Заголовки до подписи: {"Host":"dorama-shorts.s3.regru.cloud","x-amz-date":"20250926T195030Z","x-amz-content-sha256":"ba75fddc35abb4fc7fec63df1aa6599eb3f6fc8255ca9757638d16ae3911386e","x-amz-acl":"public-read","Content-Type":"video\/mp4","Content-Length":3475314}
+[2025-09-26 22:50:30] S3Client: === СОЗДАНИЕ ПОДПИСИ ===
+[2025-09-26 22:50:30] S3Client: Базовые параметры: method=PUT, uri=/RAZOBLAChIL_ZADIRU.mp4, service=s3
+[2025-09-26 22:50:30] S3Client: Canonical headers:
+content-length:3475314
+content-type:video/mp4
+host:dorama-shorts.s3.regru.cloud
+x-amz-acl:public-read
+x-amz-content-sha256:ba75fddc35abb4fc7fec63df1aa6599eb3f6fc8255ca9757638d16ae3911386e
+x-amz-date:20250926T195030Z
+
+[2025-09-26 22:50:30] S3Client: Signed headers: content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date
+[2025-09-26 22:50:30] S3Client: Canonical request:
+PUT\n
+/RAZOBLAChIL_ZADIRU.mp4\n
+\n
+content-length:3475314\n
+content-type:video/mp4\n
+host:dorama-shorts.s3.regru.cloud\n
+x-amz-acl:public-read\n
+x-amz-content-sha256:ba75fddc35abb4fc7fec63df1aa6599eb3f6fc8255ca9757638d16ae3911386e\n
+x-amz-date:20250926T195030Z\n
+\n
+content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date\n
+ba75fddc35abb4fc7fec63df1aa6599eb3f6fc8255ca9757638d16ae3911386e
+[2025-09-26 22:50:30] S3Client: Credential scope: 20250926/ru-1/s3/aws4_request
+[2025-09-26 22:50:30] S3Client: String to sign:
+AWS4-HMAC-SHA256\n
+20250926T195030Z\n
+20250926/ru-1/s3/aws4_request\n
+a5559ec0aa76753e4c6be5aedadc4845d54e6cc8f24202875c72c3e01859b43a
+[2025-09-26 22:50:30] S3Client: Финальная подпись: AWS4-HMAC-SHA256 Credential=03H86PL3LMB9M12SHAGQ/20250926/ru-1/s3/aws4_request, SignedHeaders=content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date, Signature=9c56d0f88d762a1616cc837607bb4f2954cd7ebb8060a041cf59f66f74c78a57
+[2025-09-26 22:50:30] S3Client: === КОНЕЦ СОЗДАНИЯ ПОДПИСИ ===
+[2025-09-26 22:50:30] S3Client: Финальные заголовки: {"Host":"dorama-shorts.s3.regru.cloud","x-amz-date":"20250926T195030Z","x-amz-content-sha256":"ba75fddc35abb4fc7fec63df1aa6599eb3f6fc8255ca9757638d16ae3911386e","x-amz-acl":"public-read","Content-Type":"video\/mp4","Content-Length":3475314,"Authorization":"AWS4-HMAC-SHA256 Credential=03H86PL3LMB9M12SHAGQ\/20250926\/ru-1\/s3\/aws4_request, SignedHeaders=content-length;content-type;host;x-amz-acl;x-amz-content-sha256;x-amz-date, Signature=9c56d0f88d762a1616cc837607bb4f2954cd7ebb8060a041cf59f66f74c78a57"}
+[2025-09-26 22:50:30] S3Client: Финальный URL: https://dorama-shorts.s3.regru.cloud/RAZOBLAChIL_ZADIRU.mp4
+[2025-09-26 22:50:30] S3Client: === ОТПРАВЛЯЕМ CURL ЗАПРОС ===
+[2025-09-26 22:50:30] S3Client: CURL результат: HTTP=200, error=
+[2025-09-26 22:50:30] S3Client: CURL ответ: 
+[2025-09-26 22:50:30] S3Client: === УСПЕШНАЯ ЗАГРУЗКА ===
+[2025-09-26 22:50:30] S3 RESULT: {"success":true,"url":"https:\/\/s3.regru.cloud\/dorama-shorts\/RAZOBLAChIL_ZADIRU.mp4","filename":"RAZOBLAChIL_ZADIRU.mp4"}
+[2025-09-26 22:50:30] === S3 ЗАГРУЗКА УСПЕШНА ===
+[2025-09-26 22:50:30] VIEW URL: https://s3.regru.cloud/dorama-shorts/RAZOBLAChIL_ZADIRU.mp4
+[2025-09-26 22:50:30] === НАЧИНАЕМ СОХРАНЕНИЕ В БД (MySQL) ===
+[2025-09-26 22:50:30] DB CONNECTION: успешно
+[2025-09-26 22:50:30] DUPLICATE CHECK: файл уникален
+[2025-09-26 22:50:30] DB INSERT: успешно, video_id=14
+[2025-09-26 22:50:30] === ЗАГРУЗКА ПОЛНОСТЬЮ ЗАВЕРШЕНА ===
+[2025-09-26 22:50:30] SUCCESS RESPONSE: {"success":true,"message":"\u0412\u0438\u0434\u0435\u043e \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043e","video_id":"14","s3_url":"https:\/\/s3.regru.cloud\/dorama-shorts\/RAZOBLAChIL_ZADIRU.mp4","filename":"RAZOBLAChIL_ZADIRU.mp4","original_name":"\u0420\u0410\u0417\u041e\u0411\u041b\u0410\u0427\u0418\u041b \u0417\u0410\u0414\u0418\u0420\u0423.mp4"}
+[2025-09-26 22:50:30] === КОНЕЦ ОБРАБОТКИ ===
+
