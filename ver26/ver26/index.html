@@ -10,7 +10,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   
-  <link rel="stylesheet" href="styles100.css">
+  <link rel="stylesheet" href="styles1.css">
   <link rel="icon" type="image/x-icon" href="Group-589.ico">
   
   <!-- Предотвращаем зум и другие iOS поведения -->
@@ -38,6 +38,17 @@
       touch-action: manipulation;
     }
 
+    /* СТИЛИ ДЛЯ video-swipe-container */
+    .video-swipe-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+
     /* СТИЛИ ДЛЯ ОВЕРЛЕЯ ПЕРВОГО КЛИКА */
     .video-first-click-overlay {
       position: absolute;
@@ -50,7 +61,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      z-index: 25; /* ПОВЫШЕННЫЙ z-index - выше всех элементов управления */
+      z-index: 25;
       cursor: pointer;
       backdrop-filter: blur(2px);
       animation: fadeIn 0.5s ease-out;
@@ -80,6 +91,33 @@
       text-align: center;
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
       letter-spacing: 0.5px;
+      pointer-events: none;
+    }
+
+    /* ИСПРАВЛЕННЫЕ СТИЛИ ДЛЯ ВИДЕО ПЛЕЕРОВ */
+    #currentVideo, #nextVideo {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: auto;
+      max-height: calc(100vh - 90px);
+      object-fit: contain;
+      background: #000;
+      transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    }
+
+    #currentVideo {
+      z-index: 2;
+      opacity: 1;
+      visibility: visible;
+    }
+
+    #nextVideo {
+      z-index: 1;
+      opacity: 0;
+      visibility: hidden; /* ✅ Изменено с display: none */
       pointer-events: none;
     }
 
@@ -125,22 +163,27 @@
         font-size: 18px;
         padding: 0 20px;
       }
+
+      #currentVideo, #nextVideo {
+        max-height: calc(100vh - 70px);
+      }
     }
 
-    /* Дополнительные стили для улучшения производительности */
-    .video-first-click-overlay * {
-      will-change: transform, opacity;
+    /* Оптимизация производительности */
+    #currentVideo,
+    #nextVideo {
+      will-change: opacity, visibility;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
     }
   </style>
   
-  <!-- Telegram Web App Script - ВАЖНО: должен быть загружен первым -->
+  <!-- Telegram Web App Script -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
   <div class="app">
-   
-
-    <!-- Кнопка debug и консоль - теперь вне loading-indicator -->
+    <!-- Кнопка debug и консоль -->
     <button id="debugButton" class="debug-button">DEBUG</button>
     <div id="debugConsole" class="debug-console">
         <div class="debug-header">
@@ -151,66 +194,75 @@
         <button id="clearLogs" class="clear-logs">Очистить</button>
     </div>
 
-    <!-- Основной контейнер видео (скрыт по умолчанию) -->
+    <!-- Основной контейнер видео -->
     <div class="video-container" id="videoContainer" style="display: none;">
     
       <!-- Контент вкладки "Главная" -->
       <div id="mainContent" class="tab-content active">
-        <!-- Основное видео с защитой от iOS плеера -->
-        <video 
-          id="currentVideo" 
-          autoplay 
-          muted 
-          loop 
-          playsinline 
-          webkit-playsinline
-          disablepictureinpicture
-          controlslist="nodownload nofullscreen noremoteplayback"
-          x-webkit-airplay="deny"
-        ></video>
         
-        <!-- ОВЕРЛЕЙ ПЕРВОГО КЛИКА -->
-        <div id="firstClickOverlay" class="video-first-click-overlay">
-          <!-- SVG иконка play -->
-          <svg class="overlay-play-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="50" cy="50" r="45" stroke="white" stroke-width="4" fill="rgba(255, 255, 255, 0.1)"/>
-            <path d="M40 30L70 50L40 70V30Z" fill="white"/>
-          </svg>
+        <div class="video-swipe-container">
           
-          <div class="overlay-text">Нажмите на экран</div>
+          <!-- Текущее видео -->
+<video 
+  id="currentVideo" 
+  loop 
+  playsinline 
+  webkit-playsinline
+  disablepictureinpicture
+  controlslist="nodownload nofullscreen noremoteplayback"
+  x-webkit-airplay="deny"
+></video>
+
+<!-- Следующее видео -->
+<video 
+  id="nextVideo" 
+  muted 
+  loop 
+  playsinline 
+  webkit-playsinline
+  disablepictureinpicture
+  controlslist="nodownload nofullscreen noremoteplayback"
+  x-webkit-airplay="deny"
+></video>
+          
+          <!-- ОВЕРЛЕЙ ПЕРВОГО КЛИКА -->
+          <div id="firstClickOverlay" class="video-first-click-overlay">
+            <svg class="overlay-play-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="50" cy="50" r="45" stroke="white" stroke-width="4" fill="rgba(255, 255, 255, 0.1)"/>
+              <path d="M40 30L70 50L40 70V30Z" fill="white"/>
+            </svg>
+            
+            <div class="overlay-text">Нажмите на экран</div>
+          </div>
+          
+          <!-- Оверлей с информацией о текущем видео -->
+          <div class="video-info">
+            <h3 id="videoTitle"></h3>
+            <p id="videoGenre"></p>
+          </div>
+          
+          <!-- Оверлей с кнопками действий -->
+          <div class="action-buttons">
+            <button id="likeButton" class="action-button" data-video-id="">
+              <img src="svg/like.svg" alt="icon" class="button-icon like-icon">
+              Нравится
+            </button>
+            <button id="dislikeButton" class="action-button" data-video-id="">
+              <img src="svg/dislike.svg" alt="icon" class="button-icon dislike-icon">
+              Не...тся
+            </button>
+            <button id="favoriteButton" class="action-button" data-video-id="">
+              <img src="svg/favorites.svg?v=2" alt="icon" class="button-icon favorite-icon">
+              Избранное
+            </button>
+            <button id="descriptionButton" class="action-button">
+              <img src="svg/description1.svg?v=2" alt="icon" class="button-icon">
+              Описание
+            </button>
+          </div>
+          
         </div>
         
-        <!-- Оверлей с информацией о видео (только название и жанр) -->
-        <div class="video-info">
-          <h3 id="videoTitle"></h3>
-          <p id="videoSeries" style="display: none;"></p>
-          <p id="videoSeasons" style="display: none;"></p>
-          <p id="videoStatus" style="display: none;"></p>
-          <p id="videoCountry" style="display: none;"></p>
-          <p id="videoGenre"></p>
-        </div>
-        
-        <!-- Оверлей с кнопками действий -->
-        <div class="action-buttons">
-          <button id="likeButton" class="action-button" data-video-id="">
-            <img src="svg/like.svg" alt="icon" class="button-icon like-icon">
-            Нравится
-          </button>
-          <button id="dislikeButton" class="action-button" data-video-id="">
-            <img src="svg/dislike.svg" alt="icon" class="button-icon dislike-icon">
-            Не...тся
-          </button>
-          <button id="favoriteButton" class="action-button" data-video-id="">
-            <!-- ОБНОВЛЕННАЯ ИКОНКА ИЗБРАННОГО с версией для сброса кэша -->
-            <img src="svg/favorites.svg?v=2" alt="icon" class="button-icon favorite-icon">
-            Избранное
-          </button>
-          <button id="descriptionButton" class="action-button">
-            <!-- ОБНОВЛЕННАЯ ИКОНКА ОПИСАНИЯ с версией для сброса кэша -->
-            <img src="svg/description1.svg?v=2" alt="icon" class="button-icon">
-            Описание
-          </button>
-        </div>
       </div>
       
       <!-- Контент вкладки "Избранное" -->
@@ -222,7 +274,7 @@
             <span>Нажмите на звездочку, чтобы добавить видео в избранное</span>
           </div>
           <div class="favorites-list" id="favoritesList">
-            <!-- Динамически добавляемые карточки избранных видео -->
+            <!-- Динамически добавляемые карточки -->
           </div>
         </div>
       </div>
@@ -254,6 +306,6 @@
   
   <!-- Подключаем скрипты -->
   <script src="telegram-auth.js"></script>
-  <script src="script101.js"></script>
+  <script src="script107.js"></script>
 </body>
 </html>

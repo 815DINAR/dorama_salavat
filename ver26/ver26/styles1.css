@@ -1,28 +1,14 @@
-/* styles5.css v5.3 - Независимое позиционирование элементов */
+/* styles100.css v6.0 - Исправленная версия */
 
-/*
- * УПРАВЛЕНИЕ ВЫСОТОЙ ЭЛЕМЕНТОВ:
- * --video-info-bottom: расстояние video-info от низа экрана
- * --action-buttons-bottom: расстояние action-buttons от низа экрана
- * --bottom-panel-height: высота панели вкладок
- * 
- * Примеры настройки:
- * --video-info-bottom: 90px;      // video-info выше
- * --action-buttons-bottom: 95px;  // кнопки выше
- * --video-info-bottom: 70px;      // video-info ниже
- * --action-buttons-bottom: 75px;  // кнопки ниже
- */
-
-/* CSS-переменные для настройки положения элементов */
 :root {
-  --bottom-panel-height: 950px;         /* Высота панели вкладок */
-  --video-info-bottom: 20px !important;         /* НЕЗАВИСИМАЯ настройка video-info */
-  --action-buttons-bottom: 30px !important;      /* НЕЗАВИСИМАЯ настройка action-buttons */
-  --active-tab-color: #fff;        /* Цвет активной вкладки */
-  --inactive-tab-color: #666;         /* Цвет неактивной вкладки */
+  --bottom-panel-height: 60px;  /* ✅ ИСПРАВЛЕНО с 950px */
+  --video-info-bottom: 80px;
+  --action-buttons-bottom: 80px;
+  --active-tab-color: #fff;
+  --inactive-tab-color: #666;
 }
 
-/* Сброс стилей и универсальный box-sizing */
+/* Сброс стилей */
 *,
 *::before,
 *::after {
@@ -31,7 +17,6 @@
   padding: 0;
 }
 
-/* html и body без скролла */
 html, body {
   width: 100%;
   height: 100%;
@@ -44,13 +29,12 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  /* Улучшенная поддержка тач-событий */
   touch-action: manipulation;
   -webkit-user-select: none;
   user-select: none;
 }
 
-/* Экран загрузки с картинкой */
+/* Экран загрузки */
 .loading-indicator {
   position: fixed;
   top: 0;
@@ -63,9 +47,10 @@ body {
   align-items: center;
   z-index: 1000;
 }
-/* Debug кнопка и консоль */
+
+/* Debug консоль */
 .debug-button {
-    position: fixed; /* Изменено с absolute на fixed */
+    position: fixed;
     top: 20px;
     right: 20px;
     background: rgba(255, 255, 255, 0.1);
@@ -76,7 +61,7 @@ body {
     font-size: 12px;
     font-weight: bold;
     cursor: pointer;
-    z-index: 9999; /* Увеличен z-index для отображения поверх всех элементов */
+    z-index: 9999;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
 }
@@ -88,7 +73,7 @@ body {
 }
 
 .debug-console {
-    position: fixed; /* Изменено с absolute на fixed */
+    position: fixed;
     top: 60px;
     right: 20px;
     width: 350px;
@@ -98,7 +83,7 @@ body {
     border-radius: 12px;
     backdrop-filter: blur(15px);
     display: none;
-    z-index: 9998; /* Высокий z-index */
+    z-index: 9998;
     overflow: hidden;
 }
 
@@ -208,54 +193,96 @@ body {
     background: rgba(255, 255, 255, 0.2);
 }
 
-/* Адаптивность для мобильных */
-@media (max-width: 600px) {
-    .debug-console {
-        width: calc(100vw - 40px);
-        right: 20px;
-        left: 20px;
-    }
-    
-    .debug-button {
-        padding: 8px 12px;
-        font-size: 11px;
-    }
-}
-
 .loading-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* Альтернативный вариант - contain, если нужно показать всю картинку */
-  /* object-fit: contain; */
 }
 
-/* Контейнер приложения занимает весь экран */
+/* Контейнер приложения */
 .app {
   width: 100vw;
   height: 100vh;
-  height: 100dvh; /* Для мобильных браузеров */
+  height: 100dvh;
   background: #000;
   display: flex;
   justify-content: center;
   align-items: center;
-  position: fixed; /* Фиксируем приложение */
+  position: fixed;
   top: 0;
   left: 0;
   overflow: hidden;
 }
 
-/* Контейнер видео - адаптивный под экран */
+.video-swipe-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+#currentVideo,
+#nextVideo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  
+  /* ✅ ТОЛЬКО opacity и translateY - БЕЗ scale */
+  transition: 
+    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* ✅ Аппаратное ускорение */
+  /* will-change: opacity, transform; */ /* ❌ Закомментируй */
+transform: translate3d(0, 0, 0); /* ✅ Замени на это */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Текущее видео (видимое) */
+#currentVideo {
+  z-index: 2;
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Следующее видео (скрытое) */
+#nextVideo {
+  z-index: 1;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(100%);
+}
+
+/* ✅ Анимация при переключении - БЕЗ scale */
+.video-swipe-container.transitioning #currentVideo {
+  opacity: 0;
+  transform: translateY(-100%); /* ⬆️ Уходит вверх */
+  pointer-events: none;
+}
+
+.video-swipe-container.transitioning #nextVideo {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0); /* ⬆️ Приходит снизу */
+  pointer-events: auto;
+}
+
+/* Контейнер видео */
 .video-container {
   width: 100%;
   height: 100%;
-  max-width: 450px; /* Ограничиваем ширину на больших экранах */
+  max-width: 450px;
   max-height: 100vh;
   max-height: 100dvh;
   background: black;
   position: relative;
   overflow: hidden;
-  /* Улучшенная поддержка тач-событий для Telegram */
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   display: flex;
@@ -277,7 +304,7 @@ body {
   display: block;
 }
 
-/* Стили для вкладки "Избранное" */
+/* Избранное */
 .favorites-container {
   width: 100%;
   height: 100%;
@@ -327,7 +354,7 @@ body {
   display: flex;
 }
 
-/* Карточка избранного видео - оптимизированная */
+/* Карточка избранного */
 .favorite-card {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
@@ -336,9 +363,8 @@ body {
   align-items: center;
   gap: 15px;
   cursor: pointer;
-  transition: all 0.2s ease; /* Ускорили анимацию */
+  transition: all 0.2s ease;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  /* Улучшенная область касания */
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   user-select: none;
@@ -360,10 +386,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.favorite-card-thumbnail svg {
-  opacity: 0.8;
 }
 
 .favorite-card-info {
@@ -400,28 +422,7 @@ body {
   transform: scale(0.9);
 }
 
-.favorite-card-remove svg {
-  width: 24px;
-  height: 24px;
-}
-
-/* Основное видео - центрировано по вертикали */
-.video-container video#currentVideo {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: auto;
-  max-height: calc(100vh - var(--bottom-panel-height) - 20px);
-  object-fit: contain;
-  z-index: 1;
-  opacity: 1;
-  transition: opacity 0.5s ease-in-out;
-  background: #000;
-}
-
-/* Стили для панели с вкладками */
+/* Панель вкладок */
 .bottom-panel {
   position: absolute;
   bottom: 0;
@@ -430,7 +431,6 @@ body {
   height: var(--bottom-panel-height);
   background-color: rgba(0, 0, 0, 0.95);
   z-index: 20;
-  /* Для правильного отображения на всех устройствах */
   flex-shrink: 0;
 }
 
@@ -450,31 +450,18 @@ body {
   border: none;
   cursor: pointer;
   padding: 10px;
-  transition: all 0.15s ease; /* Ускорили анимацию */
+  transition: all 0.15s ease;
   position: relative;
   color: var(--inactive-tab-color);
-  /* Улучшенная область касания */
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
 }
 
-/* Увеличиваем область касания для мобильных */
-.tab-button::after {
-  content: '';
-  position: absolute;
-  top: -10px;
-  left: -10px;
-  right: -10px;
-  bottom: -10px;
-  z-index: -1;
-}
-
-/* СТИЛИ АКТИВНОЙ ВКЛАДКИ - мгновенное переключение */
 .tab-button.active {
   color: var(--active-tab-color);
-  transform: scale(1.05); /* Небольшое увеличение */
+  transform: scale(1.05);
 }
 
 .tab-button.active::before {
@@ -486,16 +473,6 @@ body {
   height: 3px;
   background: var(--active-tab-color);
   border-radius: 0 0 3px 3px;
-  animation: slideIn 0.15s ease-out;
-}
-
-@keyframes slideIn {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
 }
 
 .tab-icon {
@@ -503,7 +480,7 @@ body {
   height: 24px;
   margin-bottom: 5px;
   transition: all 0.15s ease;
-  pointer-events: none; /* Предотвращаем блокировку кликов */
+  pointer-events: none;
 }
 
 .tab-button.active .tab-icon {
@@ -514,15 +491,14 @@ body {
 .tab-text {
   font-size: 12px;
   font-weight: 500;
-  pointer-events: none; /* Предотвращаем блокировку кликов */
+  pointer-events: none;
 }
 
-/* Визуальная обратная связь при нажатии */
 .tab-button:active {
   transform: scale(0.95);
 }
 
-/* НЕЗАВИСИМОЕ ПОЗИЦИОНИРОВАНИЕ video-info */
+/* Информация о видео */
 .video-info {
   position: absolute;
   bottom: var(--video-info-bottom);
@@ -551,7 +527,7 @@ body {
   opacity: 0.9;
 }
 
-/* НЕЗАВИСИМОЕ ПОЗИЦИОНИРОВАНИЕ action-buttons */
+/* Кнопки действий */
 .action-buttons {
   position: absolute;
   bottom: var(--action-buttons-bottom);
@@ -559,7 +535,7 @@ body {
   z-index: 10;
   display: flex;
   flex-direction: column;
-  gap: 10px; /* Больше места между кнопками */
+  gap: 10px;
 }
 
 .action-button {
@@ -578,7 +554,6 @@ body {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   outline: none;
-  -webkit-appearance: none;
   transition: transform 0.2s ease;
 }
 
@@ -586,24 +561,12 @@ body {
   transform: scale(0.95);
 }
 
-/* Состояние активной кнопки */
 .action-button.active {
   color: #fff;
 }
 
 .action-button.active .button-icon {
   filter: brightness(1.5);
-}
-
-/* Увеличиваем область касания кнопок */
-.action-button::before {
-  content: '';
-  position: absolute;
-  top: -5px;
-  left: -5px;
-  right: -5px;
-  bottom: -5px;
-  z-index: -1;
 }
 
 .button-icon {
@@ -616,20 +579,13 @@ body {
   transition: transform 0.2s ease;
 }
 
-/* Анимация для активных кнопок */
-.favorite-icon,
-.like-icon,
-.dislike-icon {
-  transition: transform 0.3s ease;
-}
-
 .action-button.active .favorite-icon,
 .action-button.active .like-icon,
 .action-button.active .dislike-icon {
   transform: scale(1.2);
 }
 
-/* Модальное окно с описанием */
+/* Модальное окно */
 .description-modal {
   position: fixed;
   bottom: 0;
@@ -707,12 +663,12 @@ body {
   white-space: pre-line;
 }
 
-/* Адаптивные правки для мобильных */
+/* Адаптивность для мобильных */
 @media (max-width: 600px) {
   :root {
-    --bottom-panel-height: 70px;
-    --video-info-bottom: 85px;      /* Независимая настройка для мобильных */
-    --action-buttons-bottom: 85px;  /* Независимая настройка для мобильных */
+    --bottom-panel-height: 60px;  /* ✅ ИСПРАВЛЕНО */
+    --video-info-bottom: 75px;
+    --action-buttons-bottom: 75px;
   }
   
   .video-info {
@@ -747,44 +703,14 @@ body {
     font-size: 11px;
   }
   
-  .favorite-card {
-    padding: 12px;
-  }
-  
-  .favorite-card-thumbnail {
-    width: 60px;
-    height: 60px;
-  }
-  
-  .favorite-card-title {
-    font-size: 14px;
-  }
-  
-  .favorite-card-genre {
-    font-size: 12px;
-  }
-  
-  .modal-content {
-    padding: 15px;
-  }
-  
-  .modal-title {
-    font-size: 16px;
-    margin-right: 40px;
-  }
-  
-  .modal-description {
-    font-size: 13px;
-  }
-  
-  .modal-close {
-    min-width: 48px;
-    min-height: 48px;
-    font-size: 32px;
+  .debug-console {
+    width: calc(100vw - 40px);
+    right: 20px;
+    left: 20px;
   }
 }
 
-/* Адаптивность для ДЕСКТОПОВ (широкие экраны) */
+/* Десктоп */
 @media (min-width: 768px) {
   .app {
     display: flex;
@@ -796,7 +722,7 @@ body {
   .video-container {
     width: 450px;
     height: 800px;
-    max-height: 95vh; /* Ограничиваем высоту */
+    max-height: 95vh;
     background: black;
     position: relative;
     overflow: hidden;
@@ -804,35 +730,8 @@ body {
     box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.1);
   }
   
-  .video-container video {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
-  
-  .video-info {
-    left: 20px;
-    right: 90px;
-  }
-  
-  .action-buttons {
-    right: 15px;
-    gap: 12px;
-  }
-  
-  .action-button {
-    min-width: 48px;
-    min-height: 48px;
-    font-size: 12px;
-  }
-  
-  .button-icon {
-    width: 24px;
-    height: 24px;
-  }
-  
   .bottom-panel {
-    border-radius: 0 0 20px 20px; /* Скругление для десктопа */
+    border-radius: 0 0 20px 20px;
   }
   
   .description-modal {
@@ -841,23 +740,9 @@ body {
     width: 450px;
     max-width: 90vw;
     transform: translateX(-50%) translateY(100%);
-    border-radius: 20px 20px 0 0;
   }
   
   .description-modal.show {
     transform: translateX(-50%) translateY(0);
-  }
-}
-
-/* Специальные стили для Telegram WebApp */
-@media (hover: none) and (pointer: coarse) {
-  .action-button {
-    min-width: 48px;
-    min-height: 48px;
-  }
-  
-  .modal-close {
-    min-width: 48px;
-    min-height: 48px;
   }
 }
