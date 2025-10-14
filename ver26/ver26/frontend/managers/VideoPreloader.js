@@ -1,4 +1,4 @@
-class VideoPreloader {
+export default class VideoPreloader {
     constructor(videoPlayerManager) {
         this.videoPlayerManager = videoPlayerManager;
         this.isPreloading = false;
