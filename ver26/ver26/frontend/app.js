@@ -812,7 +812,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       const likeIcon = likeButton.querySelector('.like-icon');
       if (likeIcon) {
-        likeIcon.src = isLiked ? 'svg/like-active.svg' : 'svg/like.svg';
+        likeIcon.src = isLiked ? 'frontend/assets/svg/like-active.svg' : 'frontend/assets/svg/like.svg';
       }
     }
     
@@ -823,7 +823,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       const dislikeIcon = dislikeButton.querySelector('.dislike-icon');
       if (dislikeIcon) {
-        dislikeIcon.src = isDisliked ? 'svg/dislike-active.svg' : 'svg/dislike.svg';
+        dislikeIcon.src = isDisliked ? 'frontend/assets/svg/dislike-active.svg' : 'frontend/assets/svg/dislike.svg';
       }
     }
     
@@ -835,7 +835,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const favoriteIcon = favoriteButton.querySelector('.favorite-icon');
       if (favoriteIcon) {
         const timestamp = Date.now();
-        favoriteIcon.src = isFavorite ? `svg/favorites-active.svg?t=${timestamp}` : `svg/favorites.svg?t=${timestamp}`;
+        favoriteIcon.src = isFavorite ? `frontend/assets/svg/favorites-active.svg?t=${timestamp}` : `frontend/assets/svg/favorites.svg?t=${timestamp}`;
       }
     }
   }
