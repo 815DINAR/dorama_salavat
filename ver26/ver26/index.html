@@ -11,7 +11,7 @@
   <meta http-equiv="Expires" content="0">
   
   <link rel="stylesheet" href="styles1.css">
-  <link rel="icon" type="image/x-icon" href="Group-589.ico">
+  <link rel="icon" type="image/x-icon" href="frontend/assets/icons/Group-589.ico">
   
   <!-- Предотвращаем зум и другие iOS поведения -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -244,19 +244,19 @@
           <!-- Оверлей с кнопками действий -->
           <div class="action-buttons">
             <button id="likeButton" class="action-button" data-video-id="">
-              <img src="svg/like.svg" alt="icon" class="button-icon like-icon">
+              <img src="frontend/assets/svg/like.svg" alt="icon" class="button-icon like-icon">
               Нравится
             </button>
             <button id="dislikeButton" class="action-button" data-video-id="">
-              <img src="svg/dislike.svg" alt="icon" class="button-icon dislike-icon">
+              <img src="frontend/assets/svg/dislike.svg" alt="icon" class="button-icon dislike-icon">
               Не...тся
             </button>
             <button id="favoriteButton" class="action-button" data-video-id="">
-              <img src="svg/favorites.svg?v=2" alt="icon" class="button-icon favorite-icon">
+              <img src="frontend/assets/svg/favorites.svg?v=2" alt="icon" class="button-icon favorite-icon">
               Избранное
             </button>
             <button id="descriptionButton" class="action-button">
-              <img src="svg/description1.svg?v=2" alt="icon" class="button-icon">
+              <img src="frontend/assets/svg/description1.svg?v=2" alt="icon" class="button-icon">
               Описание
             </button>
           </div>
@@ -269,7 +269,7 @@
       <div id="favoritesContent" class="tab-content">
         <div class="favorites-container">
           <div class="favorites-empty" id="favoritesEmpty">
-            <img src="svg/favorites.svg" alt="Избранное" class="empty-icon">
+            <img src="frontend/assets/svg/favorites.svg" alt="Избранное" class="empty-icon">
             <p>Здесь будут ваши избранные видео</p>
             <span>Нажмите на звездочку, чтобы добавить видео в избранное</span>
           </div>
@@ -296,7 +296,7 @@
             <span class="tab-text">Главная</span>
           </button>
           <button class="tab-button" id="favoritesTab" data-tab="favorites">
-            <img src="svg/favorites.svg" alt="Избранное" class="tab-icon">
+            <img src="frontend/assets/svg/favorites.svg" alt="Избранное" class="tab-icon">
             <span class="tab-text">Избранное</span>
           </button>
         </div>
@@ -305,13 +305,13 @@
   </div>
   
   <!-- Подключаем скрипты -->
-  <script src="DebugLogger.js"></script>
-  <script src="UIController.js"></script>
-  <script src="VideoController.js"></script>
-  <script src="GestureController.js"></script>
-  <script src="VideoPlayerManager.js"></script>
-  <script src="VideoPreloader.js"></script>
-  <script src="telegram-auth.js"></script>
-  <script src="script107.js"></script>
+  <script src="frontend/utils/DebugLogger.js"></script>
+  <script src="frontend/controllers/UIController.js"></script>
+  <script src="frontend/controllers/VideoController.js"></script>
+  <script src="frontend/controllers/GestureController.js"></script>
+  <script src="frontend/managers/VideoPlayerManager.js"></script>
+  <script src="frontend/managers/VideoPreloader.js"></script>
+  <script src="frontend/auth/telegram-auth.js"></script>
+  <script src="frontend/app.js"></script>
 </body>
 </html>
