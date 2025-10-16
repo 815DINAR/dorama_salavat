@@ -1,51 +1,51 @@
 /* styles100.css v6.0 - Исправленная версия */
 
 :root {
-  --bottom-panel-height: 60px;  /* ✅ ИСПРАВЛЕНО с 950px */
-  --video-info-bottom: 80px;
-  --action-buttons-bottom: 80px;
-  --active-tab-color: #fff;
-  --inactive-tab-color: #666;
+    --bottom-panel-height: 60px !important; /* ✅ ИСПРАВЛЕНО с 950px */
+    --video-info-bottom: 30px !important;
+    --action-buttons-bottom: 70px !important;
+    --active-tab-color: #fff;
+    --inactive-tab-color: #666;
 }
 
 /* Сброс стилей */
 *,
 *::before,
 *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 html, body {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
 }
 
 body {
-  font-family: Arial, sans-serif;
-  background: #000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  touch-action: manipulation;
-  -webkit-user-select: none;
-  user-select: none;
+    font-family: Arial, sans-serif;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 /* Экран загрузки */
 .loading-indicator {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
 }
 
 /* Debug консоль */
@@ -90,6 +90,12 @@ body {
 .debug-console.show {
     display: block;
     animation: slideIn 0.3s ease-out;
+}
+/* Анимация для активных кнопок */
+.favorite-icon,
+.like-icon,
+.dislike-icon {
+    /* анимационные стили */
 }
 
 @keyframes slideIn {
@@ -194,555 +200,615 @@ body {
 }
 
 .loading-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 /* Контейнер приложения */
 .app {
-  width: 100vw;
-  height: 100vh;
-  height: 100dvh;
-  background: #000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: fixed;
-  top: 0;
-  left: 0;
-  overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow: hidden;
 }
 
 .video-swipe-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background: #000;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
 }
 
 #currentVideo,
 #nextVideo {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  
-  /* ✅ ТОЛЬКО opacity и translateY - БЕЗ scale */
-  transition: 
-    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  
-  /* ✅ Аппаратное ускорение */
-  /* will-change: opacity, transform; */ /* ❌ Закомментируй */
-transform: translate3d(0, 0, 0); /* ✅ Замени на это */
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+
+    /* ✅ ТОЛЬКО opacity и translateY - БЕЗ scale */
+    transition:
+            opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+            transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* ✅ Аппаратное ускорение */
+    /* will-change: opacity, transform; */ /* ❌ Закомментируй */
+    transform: translate3d(0, 0, 0); /* ✅ Замени на это */
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 /* Текущее видео (видимое) */
 #currentVideo {
-  z-index: 2;
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
+    z-index: 2;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
 }
 
 /* Следующее видео (скрытое) */
 #nextVideo {
-  z-index: 1;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(100%);
+    z-index: 1;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(100%);
 }
 
 /* ✅ Анимация при переключении - БЕЗ scale */
 .video-swipe-container.transitioning #currentVideo {
-  opacity: 0;
-  transform: translateY(-100%); /* ⬆️ Уходит вверх */
-  pointer-events: none;
+    opacity: 0;
+    transform: translateY(-100%); /* ⬆️ Уходит вверх */
+    pointer-events: none;
 }
 
 .video-swipe-container.transitioning #nextVideo {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0); /* ⬆️ Приходит снизу */
-  pointer-events: auto;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0); /* ⬆️ Приходит снизу */
+    pointer-events: auto;
 }
 
 /* Контейнер видео */
 .video-container {
-  width: 100%;
-  height: 100%;
-  max-width: 450px;
-  max-height: 100vh;
-  max-height: 100dvh;
-  background: black;
-  position: relative;
-  overflow: hidden;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  display: flex;
-  flex-direction: column;
+    width: 100%;
+    height: 100%;
+    max-width: 450px;
+    max-height: 100vh;
+    max-height: 100dvh;
+    background: black;
+    position: relative;
+    overflow: hidden;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Контейнеры для вкладок */
 .tab-content {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: calc(100% - var(--bottom-panel-height));
-  display: none;
-  overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: calc(100% - var(--bottom-panel-height));
+    display: none;
+    overflow: hidden;
 }
 
 .tab-content.active {
-  display: block;
+    display: block;
 }
 
-/* Избранное */
 .favorites-container {
-  width: 100%;
-  height: 100%;
-  background: #000;
-  overflow-y: auto;
-  padding: 20px 10px;
-  padding-bottom: 40px;
-  -webkit-overflow-scrolling: touch;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    overflow-y: auto;
+    padding: 5px;
+    padding-bottom: 80px;
+    -webkit-overflow-scrolling: touch;
 }
 
 .favorites-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: #666;
-  text-align: center;
-  padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #666;
+    text-align: center;
+    padding: 20px;
 }
 
 .favorites-empty .empty-icon {
-  width: 80px;
-  height: 80px;
-  opacity: 0.3;
-  margin-bottom: 20px;
+    width: 80px;
+    height: 80px;
+    opacity: 0.3;
+    margin-bottom: 20px;
 }
 
 .favorites-empty p {
-  font-size: 18px;
-  color: #999;
-  margin-bottom: 10px;
+    font-size: 18px;
+    color: #999;
+    margin-bottom: 10px;
 }
 
 .favorites-empty span {
-  font-size: 14px;
-  color: #666;
+    font-size: 14px;
+    color: #666;
 }
 
 .favorites-list {
-  display: none;
-  flex-direction: column;
-  gap: 15px;
+    display: none;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 4px;
+    padding: 0;
+    width: 100%;
 }
 
 .favorites-list.has-items {
-  display: flex;
+    display: grid;
 }
 
 /* Карточка избранного */
 .favorite-card {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 15px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  user-select: none;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 9 / 16;
+    background: #1a1a1a;
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
 }
 
-.favorite-card:hover,
 .favorite-card:active {
-  background: rgba(255, 255, 255, 0.1);
-  transform: scale(1.02);
+    opacity: 0.8;
 }
 
 .favorite-card-thumbnail {
-  width: 80px;
-  height: 80px;
-  background: #222;
-  border-radius: 8px;
-  overflow: hidden;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #1a1a1a;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.favorite-card-info {
-  flex: 1;
-  overflow: hidden;
+.favorite-card-thumbnail img,
+.favorite-card-thumbnail video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
-.favorite-card-title {
-  color: #fff;
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 5px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.favorite-card-genre {
-  color: #999;
-  font-size: 14px;
-}
-
+/* Кнопка удаления (три точки) */
 .favorite-card-remove {
-  background: none;
-  border: none;
-  color: #fff;
-  padding: 10px;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    border: none;
+    color: #fff;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    line-height: 1;
+    z-index: 10;
+    transition: background 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 
 .favorite-card-remove:active {
-  transform: scale(0.9);
+    background: rgba(0, 0, 0, 0.8);
+}
+
+/* Информация о видео внизу карточки */
+.favorite-card-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 30px 6px 6px 6px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.6) 50%, transparent 100%);
+    color: #fff;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.favorite-card-title {
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.3;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.favorite-card-genre {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.8);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.favorite-card-remove:active {
+    transform: scale(0.9);
 }
 
 /* Панель вкладок */
 .bottom-panel {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: var(--bottom-panel-height);
-  background-color: rgba(0, 0, 0, 0.95);
-  z-index: 20;
-  flex-shrink: 0;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: var(--bottom-panel-height);
+    background-color: rgba(0, 0, 0, 0.95);
+    z-index: 20;
+    flex-shrink: 0;
 }
 
 .tabs-container {
-  display: flex;
-  height: 100%;
-  width: 100%;
+    display: flex;
+    height: 100%;
+    width: 100%;
 }
 
 .tab-button {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 10px;
-  transition: all 0.15s ease;
-  position: relative;
-  color: var(--inactive-tab-color);
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  user-select: none;
-  -webkit-user-select: none;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    transition: all 0.15s ease;
+    position: relative;
+    color: var(--inactive-tab-color);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .tab-button.active {
-  color: var(--active-tab-color);
-  transform: scale(1.05);
+    color: var(--active-tab-color);
+    transform: scale(1.05);
 }
 
-.tab-button.active::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 20%;
-  right: 20%;
-  height: 3px;
-  background: var(--active-tab-color);
-  border-radius: 0 0 3px 3px;
+.tab-button.active {
+    color: var(--active-tab-color);
+    transform: scale(1.05);
 }
 
 .tab-icon {
-  width: 24px;
-  height: 24px;
-  margin-bottom: 5px;
-  transition: all 0.15s ease;
-  pointer-events: none;
+    width: 24px;
+    height: 24px;
+    margin-bottom: 5px;
+    transition: all 0.15s ease;
+    pointer-events: none;
 }
 
 .tab-button.active .tab-icon {
-  filter: brightness(1.5);
-  transform: scale(1.1);
+    filter: brightness(1.5);
+    transform: scale(1.1);
 }
 
 .tab-text {
-  font-size: 12px;
-  font-weight: 500;
-  pointer-events: none;
+    font-size: 12px;
+    font-weight: 500;
+    pointer-events: none;
 }
 
 .tab-button:active {
-  transform: scale(0.95);
+    transform: scale(0.95);
 }
 
 /* Информация о видео */
 .video-info {
-  position: absolute;
-  bottom: var(--video-info-bottom);
-  left: 20px;
-  right: 80px;
-  z-index: 10;
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.7);
-  font-size: 16px;
-  pointer-events: none;
+    position: absolute;
+    bottom: var(--video-info-bottom);
+    left: 20px;
+    right: 80px;
+    z-index: 10;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+    font-size: 16px;
+    pointer-events: none;
 }
 
 .video-info h3 {
-  margin-bottom: 8px;
-  line-height: 1.3;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  hyphens: auto;
-  font-size: 18px;
-  font-weight: bold;
+    margin-bottom: 8px;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    font-size: 18px;
+    font-weight: bold;
 }
 
 .video-info p {
-  margin-bottom: 4px;
-  font-size: 14px;
-  opacity: 0.9;
+    margin-bottom: 4px;
+    font-size: 14px;
+    opacity: 0.9;
 }
 
 /* Кнопки действий */
 .action-buttons {
-  position: absolute;
-  bottom: var(--action-buttons-bottom);
-  right: 10px;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+    position: absolute;
+    bottom: var(--action-buttons-bottom);
+    right: 10px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-weight: 700; /* или bold */
+
 }
 
 .action-button {
-  background: transparent;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  text-decoration: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: 11px;
-  min-width: 44px;
-  min-height: 44px;
-  padding: 8px;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  outline: none;
-  transition: transform 0.2s ease;
+    background: transparent;
+    font-weight: 700; /* или bold */
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 11px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    transition: transform 0.2s ease;
 }
 
 .action-button:active {
-  transform: scale(0.95);
+    transform: scale(0.95);
 }
 
 .action-button.active {
-  color: #fff;
+    color: #fff;
 }
 
 .action-button.active .button-icon {
-  filter: brightness(1.5);
+    filter: brightness(1.5);
 }
 
 .button-icon {
-  width: 22px;
-  height: 22px;
-  margin-bottom: 4px;
-  -webkit-user-select: none;
-  user-select: none;
-  pointer-events: none;
-  transition: transform 0.2s ease;
+    width: 22px;
+    height: 22px;
+    margin-bottom: 4px;
+    -webkit-user-select: none;
+    user-select: none;
+    pointer-events: none;
+    transition: transform 0.2s ease;
 }
 
 .action-button.active .favorite-icon,
 .action-button.active .like-icon,
 .action-button.active .dislike-icon {
-  transform: scale(1.2);
+    transform: scale(1.2);
 }
 
 /* Модальное окно */
 .description-modal {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 50vh;
-  background: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(10px);
-  transform: translateY(100%);
-  transition: transform 0.3s ease-in-out;
-  z-index: 100;
-  border-radius: 20px 20px 0 0;
-  overflow: hidden;
-  -webkit-user-select: text;
-  user-select: text;
-  touch-action: pan-y;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60vh;
+    background: #1a1a1a;
+    transform: translateY(100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 100;
+    border-radius: 20px 20px 0 0;
+    overflow: hidden;
+    touch-action: pan-y;
+}
+
+/* Серая полоска сверху (handle) */
+.description-modal::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 5px;
+    background: #4a4a4a;
+    border-radius: 3px;
+    z-index: 1;
 }
 
 .description-modal.show {
-  transform: translateY(0);
+    transform: translateY(0);
 }
 
 .modal-content {
-  padding: 20px;
-  height: 100%;
-  overflow-y: auto;
-  position: relative;
-  -webkit-user-select: text;
-  user-select: text;
+    padding: 35px 20px 20px 20px;
+    height: 100%;
+    overflow-y: auto;
+    position: relative;
+}
+
+/* Шапка модального окна (заголовок + крестик) */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    gap: 15px;
 }
 
 .modal-close {
-  position: absolute;
-  top: 15px;
-  right: 20px;
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 28px;
-  cursor: pointer;
-  line-height: 1;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: background-color 0.2s;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  outline: none;
-  min-width: 44px;
-  min-height: 44px;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 32px;
+    cursor: pointer;
+    line-height: 1;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    font-weight: 300;
+    padding: 0;
+    margin: -5px -10px 0 0;
 }
 
 .modal-close:hover,
 .modal-close:active {
-  background-color: rgba(255, 255, 255, 0.1);
+    opacity: 0.7;
 }
 
 .modal-title {
-  color: #fff;
-  font-size: 18px;
-  margin-bottom: 15px;
-  margin-right: 50px;
-  line-height: 1.3;
-  font-weight: bold;
+    color: #fff;
+    font-size: 28px;
+    line-height: 1.2;
+    font-weight: 700;
+    flex: 1;
+    margin: 0;
+    -webkit-user-select: text;
+    user-select: text;
 }
 
 .modal-description {
-  color: #ccc;
-  font-size: 14px;
-  line-height: 1.6;
-  margin-right: 10px;
-  white-space: pre-line;
+    color: #d4d4d4;
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: 30px;
+    white-space: pre-line;
+    -webkit-user-select: text;
+    user-select: text;
 }
 
 /* Адаптивность для мобильных */
 @media (max-width: 600px) {
-  :root {
-    --bottom-panel-height: 60px;  /* ✅ ИСПРАВЛЕНО */
-    --video-info-bottom: 75px;
-    --action-buttons-bottom: 75px;
-  }
-  
-  .video-info {
-    left: 10px;
-    right: 65px;
-    font-size: 14px;
-  }
-  
-  .action-buttons {
-    right: 5px;
-    gap: 8px;
-  }
-  
-  .button-icon {
-    width: 26px;
-    height: 26px;
-  }
-  
-  .action-button {
-    min-width: 48px;
-    min-height: 48px;
-    padding: 10px;
-    font-size: 10px;
-  }
-  
-  .tab-icon {
-    width: 22px;
-    height: 22px;
-  }
-  
-  .tab-text {
-    font-size: 11px;
-  }
-  
-  .debug-console {
-    width: calc(100vw - 40px);
-    right: 20px;
-    left: 20px;
-  }
+    :root {
+        --bottom-panel-height: 60px;  /* ✅ ИСПРАВЛЕНО */
+        --video-info-bottom: 75px;
+        --action-buttons-bottom: 75px;
+    }
+
+    .video-info {
+        left: 10px;
+        right: 65px;
+        font-size: 14px;
+    }
+
+    .action-buttons {
+        right: 5px;
+        gap: 8px;
+    }
+
+    .button-icon {
+        width: 26px;
+        height: 26px;
+    }
+
+    .action-button {
+        min-width: 48px;
+        min-height: 48px;
+        padding: 10px;
+        font-size: 10px;
+    }
+
+    .tab-icon {
+        width: 22px;
+        height: 22px;
+    }
+
+    .tab-text {
+        font-size: 11px;
+    }
+
+    .debug-console {
+        width: calc(100vw - 40px);
+        right: 20px;
+        left: 20px;
+    }
 }
 
 /* Десктоп */
 @media (min-width: 768px) {
-  .app {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
-  
-  .video-container {
-    width: 450px;
-    height: 800px;
-    max-height: 95vh;
-    background: black;
-    position: relative;
-    overflow: hidden;
-    border-radius: 20px;
-    box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.1);
-  }
-  
-  .bottom-panel {
-    border-radius: 0 0 20px 20px;
-  }
-  
-  .description-modal {
-    left: 50%;
-    right: auto;
-    width: 450px;
-    max-width: 90vw;
-    transform: translateX(-50%) translateY(100%);
-  }
-  
-  .description-modal.show {
-    transform: translateX(-50%) translateY(0);
-  }
+    .app {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .video-container {
+        width: 450px;
+        height: 800px;
+        max-height: 95vh;
+        background: black;
+        position: relative;
+        overflow: hidden;
+        border-radius: 20px;
+        box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.1);
+    }
+
+    .bottom-panel {
+        border-radius: 0 0 20px 20px;
+    }
+
+    .description-modal {
+        left: 50%;
+        right: auto;
+        width: 450px;
+        max-width: 90vw;
+        transform: translateX(-50%) translateY(100%);
+    }
+
+    .description-modal.show {
+        transform: translateX(-50%) translateY(0);
+    }
 }
