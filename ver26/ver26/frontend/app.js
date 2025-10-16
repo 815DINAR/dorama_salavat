@@ -312,127 +312,175 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ===============================
   // ФУНКЦИИ ИЗБРАННОГО
   // ===============================
-  
-  async function updateFavoritesList() {
-    const freshUserData = await window.telegramAuth.getUserData();
-    if (freshUserData) {
-      userFavorites = freshUserData.favorites || [];
-    }
-    
-    const favoriteVideos = videos.filter(video => 
-      userFavorites.includes(video.filename)
-    );
-    
-    if (favoriteVideos.length === 0) {
-      favoritesEmpty.style.display = 'flex';
-      favoritesList.style.display = 'none';
-      favoritesList.classList.remove('has-items');
-    } else {
-      favoritesEmpty.style.display = 'none';
-      favoritesList.style.display = 'flex';
-      favoritesList.classList.add('has-items');
-      
-      favoritesList.innerHTML = '';
-      
-      favoriteVideos.forEach(video => {
-        const card = createFavoriteCard(video);
-        favoritesList.appendChild(card);
-      });
-    }
-  }
-  
-  function createFavoriteCard(video) {
-    const card = document.createElement('div');
-    card.className = 'favorite-card';
-    card.setAttribute('data-video-filename', video.filename);
-    
-    const thumbnail = document.createElement('div');
-    thumbnail.className = 'favorite-card-thumbnail';
-    
-    thumbnail.innerHTML = `
-      <svg width="100%" height="100%" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="80" height="80" rx="8" fill="#1a1a1a"/>
-        <circle cx="40" cy="40" r="25" fill="#333"/>
-        <path d="M35 30L50 40L35 50V30Z" fill="#666"/>
-      </svg>
-    `;
-    
-    const info = document.createElement('div');
-    info.className = 'favorite-card-info';
-    
-    const title = document.createElement('div');
-    title.className = 'favorite-card-title';
-    title.textContent = video.title || 'Без названия';
-    
-    const genre = document.createElement('div');
-    genre.className = 'favorite-card-genre';
-    genre.textContent = video.genre || 'Неизвестно';
-    
-    info.appendChild(title);
-    info.appendChild(genre);
-    
-    const removeBtn = document.createElement('button');
-    removeBtn.className = 'favorite-card-remove';
-    removeBtn.innerHTML = `
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-      </svg>
-    `;
-    
-    const handleCardClick = (e) => {
-      if (!e.target.closest('.favorite-card-remove')) {
-        const videoIndex = videos.findIndex(v => v.filename === video.filename);
-        if (videoIndex !== -1) {
-          switchTab('main');
-          const orderIndex = videoOrder.indexOf(videoIndex);
-          if (orderIndex !== -1) {
-            currentOrderIndex = orderIndex;
-            window.currentOrderIndex = currentOrderIndex;
-          } else {
-            currentOrderIndex = 0;
-            window.currentOrderIndex = currentOrderIndex;
-            videoOrder.unshift(videoIndex);
-            window.videoOrder = videoOrder;
-          }
-          const currentVideoId = likeButton?.getAttribute('data-video-id');
-          if (currentVideoId !== video.filename) {
-            loadVideo();
-          }
+
+    // Кеш для уже созданных карточек
+    const favoritesCardsCache = new Map();
+
+    async function updateFavoritesList() {
+        const freshUserData = await window.telegramAuth.getUserData();
+        if (freshUserData) {
+            userFavorites = freshUserData.favorites || [];
         }
-      }
-    };
-    
-    card.addEventListener('click', handleCardClick);
-    card.addEventListener('touchend', (e) => {
-      e.stopPropagation();
-      handleCardClick(e);
-    }, { passive: false });
-    
-    removeBtn.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      
-      userFavorites = userFavorites.filter(id => id !== video.filename);
-      updateButtonStates(video.filename);
-      
-      const success = await window.telegramAuth.toggleFavorite(video.filename);
-      if (!success) {
-        userFavorites.push(video.filename);
-        updateButtonStates(video.filename);
-      } else {
-        card.style.transform = 'translateX(-100%)';
-        card.style.opacity = '0';
-        setTimeout(() => {
-          updateFavoritesList();
-        }, 300);
-      }
-    });
-    
-    card.appendChild(thumbnail);
-    card.appendChild(info);
-    card.appendChild(removeBtn);
-    
-    return card;
-  }
+
+        const favoriteVideos = videos.filter(video =>
+            userFavorites.includes(video.filename)
+        );
+
+        if (favoriteVideos.length === 0) {
+            favoritesEmpty.style.display = 'flex';
+            favoritesList.style.display = 'none';
+            favoritesList.classList.remove('has-items');
+            // Очищаем кеш
+            favoritesCardsCache.clear();
+        } else {
+            favoritesEmpty.style.display = 'none';
+            favoritesList.style.display = 'grid';
+            favoritesList.classList.add('has-items');
+
+            // ✅ ОПТИМИЗАЦИЯ: Не пересоздаем карточки, если они уже есть
+            const currentFilenames = new Set(favoriteVideos.map(v => v.filename));
+
+            // Удаляем карточки которых больше нет в избранном
+            Array.from(favoritesList.children).forEach(card => {
+                const filename = card.getAttribute('data-video-filename');
+                if (!currentFilenames.has(filename)) {
+                    card.remove();
+                    favoritesCardsCache.delete(filename);
+                }
+            });
+
+            // Добавляем/упорядочиваем карточки в DOM согласно порядку favoriteVideos
+            favoriteVideos.forEach(video => {
+                let card = favoritesCardsCache.get(video.filename);
+                if (!card) {
+                    card = createFavoriteCard(video);
+                    favoritesCardsCache.set(video.filename, card);
+                    console.log('➕ Добавлена карточка:', video.filename);
+                }
+                favoritesList.appendChild(card); // appendChild перемещает существующий узел, если он уже есть
+            });
+        }
+    }
+
+    function createFavoriteCard(video) {
+        const card = document.createElement('div');
+        card.className = 'favorite-card';
+        card.setAttribute('data-video-filename', video.filename);
+
+        const thumbnail = document.createElement('div');
+        thumbnail.className = 'favorite-card-thumbnail';
+
+        const videoSrc = video.s3_url || video.url ||
+            `https://s3.regru.cloud/dorama-shorts/${encodeURIComponent(video.filename)}`;
+
+        // Создаем video элемент для миниатюры
+        const thumbnailVideo = document.createElement('video');
+        thumbnailVideo.src = videoSrc;
+        thumbnailVideo.muted = true;
+        thumbnailVideo.playsInline = true;
+        thumbnailVideo.preload = 'metadata';
+        thumbnailVideo.style.width = '100%';
+        thumbnailVideo.style.height = '100%';
+        thumbnailVideo.style.objectFit = 'cover';
+
+        // ✅ ИСПРАВЛЕНО: Загружаем кадр ОДИН РАЗ
+        let frameLoaded = false;
+
+        thumbnailVideo.addEventListener('loadedmetadata', () => {
+            if (!frameLoaded) {
+                thumbnailVideo.currentTime = Math.min(1, thumbnailVideo.duration * 0.1);
+            }
+        });
+
+        thumbnailVideo.addEventListener('seeked', () => {
+            if (!frameLoaded) {
+                frameLoaded = true;
+                console.log('✅ Миниатюра загружена:', video.filename);
+            }
+        });
+
+        // Предотвращаем повторную загрузку
+        thumbnailVideo.addEventListener('canplay', () => {
+            if (frameLoaded) {
+                thumbnailVideo.pause();
+            }
+        });
+
+        thumbnail.appendChild(thumbnailVideo);
+
+        const info = document.createElement('div');
+        info.className = 'favorite-card-info';
+
+        const title = document.createElement('div');
+        title.className = 'favorite-card-title';
+        title.textContent = video.title || 'Без названия';
+
+        const genre = document.createElement('div');
+        genre.className = 'favorite-card-genre';
+        genre.textContent = video.genre || 'Неизвестно';
+
+        info.appendChild(title);
+        info.appendChild(genre);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'favorite-card-remove';
+        removeBtn.innerHTML = '⋮';
+        removeBtn.setAttribute('aria-label', 'Удалить из избранного');
+        removeBtn.setAttribute('title', 'Удалить из избранного');
+
+        const handleCardClick = (e) => {
+            if (!e.target.closest('.favorite-card-remove')) {
+                const videoIndex = videos.findIndex(v => v.filename === video.filename);
+                if (videoIndex !== -1) {
+                    switchTab('main');
+                    const orderIndex = videoOrder.indexOf(videoIndex);
+                    if (orderIndex !== -1) {
+                        currentOrderIndex = orderIndex;
+                        window.currentOrderIndex = currentOrderIndex;
+                    } else {
+                        currentOrderIndex = 0;
+                        window.currentOrderIndex = currentOrderIndex;
+                        videoOrder.unshift(videoIndex);
+                        window.videoOrder = videoOrder;
+                    }
+                    const currentVideoId = likeButton?.getAttribute('data-video-id');
+                    if (currentVideoId !== video.filename) {
+                        loadVideo();
+                    }
+                }
+            }
+        };
+
+        card.addEventListener('click', handleCardClick);
+        card.addEventListener('touchend', (e) => {
+            e.stopPropagation();
+            handleCardClick(e);
+        }, { passive: false });
+
+        removeBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+
+            userFavorites = userFavorites.filter(id => id !== video.filename);
+            updateButtonStates(video.filename);
+
+            const success = await window.telegramAuth.toggleFavorite(video.filename);
+            if (!success) {
+                userFavorites.push(video.filename);
+                updateButtonStates(video.filename);
+            } else {
+                card.style.opacity = '0';
+                setTimeout(() => {
+                    updateFavoritesList();
+                }, 200);
+            }
+        });
+
+        card.appendChild(thumbnail);
+        card.appendChild(info);
+        card.appendChild(removeBtn);
+
+        return card;
+    }
   
   // ===============================
   // ФУНКЦИИ УПРАВЛЕНИЯ ВИДЕО
