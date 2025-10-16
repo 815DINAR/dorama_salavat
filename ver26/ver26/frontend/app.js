@@ -928,13 +928,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       const fullDescription = `${description}
 
-📊 Подробная информация:
-• Год выпуска: ${year}
-• Серии: ${series}
-• Сезоны: ${seasons}  
-• Статус: ${status}
-• Страна: ${country}
-• Жанр: ${genre}`;
+Год выпуска: ${year}
+Серии: ${series}
+Сезоны: ${seasons}  
+Статус: ${status}
+Страна: ${country}
+Жанр: ${genre}`;
       
       if (modalTitle) {
         modalTitle.textContent = title;
