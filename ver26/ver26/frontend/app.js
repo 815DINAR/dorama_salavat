@@ -1,4 +1,11 @@
-// script102.js v9.1 - Исправленная версия со звуком
+import VideoPlayerManager from "./managers/VideoPlayerManager.js";
+import VideoPreloader from "./managers/VideoPreloader.js";
+import VideoManager from "./managers/VideoManager.js";
+import VideoController from "./controllers/VideoController.js";
+import GestureController from "./controllers/GestureController.js";
+import UIController from "./controllers/UIController.js";
+import DebugLogger from "./utils/DebugLogger.js";
+
 document.addEventListener('DOMContentLoaded', async () => {
 
   window.debugLogger = new DebugLogger();
@@ -85,10 +92,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   const videoController = new VideoController(videoPlayerManager);
   const gestureController = new GestureController(videoController, uiController);
   const videoPreloader = new VideoPreloader(videoPlayerManager);
-  
+
+  const videoManager = new VideoManager(videoPlayerManager, videoPreloader, window.telegramAuth);
+  videoManager.initializeFromUserData(userData);
+
   window.videoPreloader = videoPreloader;
   window.videoPlayerManager = videoPlayerManager;
-  
+  window.videoManager = videoManager;
+
+  console.log("✅ VideoManager инициализирован");
+
   // ===============================
   // DOM ЭЛЕМЕНТЫ
   // ===============================
@@ -255,7 +268,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
           }
         } else {
-          loadVideo();
+            videoManager.loadVideo(
+                videoController,
+                updateButtonStates,
+                resetWatchTimer,
+                startWatchTracking,
+                videoTitle,
+                videoGenre,
+                currentTab,
+                hasFirstClickOccurred
+            );
         }
       }
     } else if (tabName === 'favorites') {
@@ -507,91 +529,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       handleClick(e);
     });
   }
-  
-  async function shuffleUnwatchedVideos() {
-    const unwatchedIndices = [];
-    
-    videos.forEach((video, index) => {
-      if (!watchedVideosSet.has(video.filename)) {
-        const bufferIndex = skippedVideosBuffer.indexOf(video.filename);
-        if (bufferIndex === -1 || bufferIndex < skippedVideosBuffer.length - MIN_VIDEOS_BEFORE_REPEAT) {
-          unwatchedIndices.push(index);
-        }
-      }
-    });
-    
-    console.log(`📊 Просмотрено: ${watchedVideosSet.size}, доступно: ${unwatchedIndices.length}`);
-    
-    if (unwatchedIndices.length < 3 && skippedVideosBuffer.length > 0) {
-      const oldSkipped = skippedVideosBuffer.slice(0, Math.max(0, skippedVideosBuffer.length - MIN_VIDEOS_BEFORE_REPEAT));
-      oldSkipped.forEach(filename => {
-        const index = videos.findIndex(v => v.filename === filename);
-        if (index !== -1 && !watchedVideosSet.has(filename)) {
-          unwatchedIndices.push(index);
-        }
-      });
-    }
-    
-    if (unwatchedIndices.length === 0) {
-      console.log('🔄 Все просмотрено, новый круг');
-      watchedVideosSet.clear();
-      currentSessionOrder = [];
-      skippedVideosBuffer = [];
-      
-      await window.telegramAuth.resetWatchProgress();
-      
-      unwatchedIndices.push(...videos.map((_, i) => i));
-    }
-    
-    videoOrder = [...unwatchedIndices];
-    for (let i = videoOrder.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [videoOrder[i], videoOrder[j]] = [videoOrder[j], videoOrder[i]];
-    }
-    
-    currentOrderIndex = 0;
-    window.videoOrder = videoOrder;
-    window.currentOrderIndex = currentOrderIndex;
-    
-    currentSessionOrder = videoOrder.map(idx => videos[idx].filename);
-    
-    saveSessionOrderBatch();
-    
-    console.log('🔀 Видео перемешаны:', videoOrder.length);
-  }
-
-  function saveSessionOrderBatch() {
-    if (sessionOrderUpdateTimer) {
-      clearTimeout(sessionOrderUpdateTimer);
-    }
-    
-    sessionOrderUpdateTimer = setTimeout(() => {
-      window.telegramAuth.saveSessionOrder(currentSessionOrder);
-    }, 2000);
-  }
-
-  function updateLastVideoBatch(videoId) {
-    if (lastVideoUpdateTimer) {
-      clearTimeout(lastVideoUpdateTimer);
-    }
-    
-    lastVideoUpdateTimer = setTimeout(() => {
-      window.telegramAuth.updateLastVideo(videoId);
-    }, 10000);
-  }
-
-  function addToSkippedBuffer(filename) {
-    const existingIndex = skippedVideosBuffer.indexOf(filename);
-    if (existingIndex !== -1) {
-      skippedVideosBuffer.splice(existingIndex, 1);
-    }
-    
-    skippedVideosBuffer.push(filename);
-    
-    if (skippedVideosBuffer.length > SKIPPED_BUFFER_SIZE) {
-      skippedVideosBuffer.shift();
-    }
-  }
 
   function resetWatchTimer() {
     if (watchTimer) {
@@ -641,214 +578,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ===============================
   // ИСПРАВЛЕННАЯ ФУНКЦИЯ loadVideo()
   // ===============================
-  
-  async function loadVideo() {
-    if (isLoadingVideo) {
-      console.log('⏳ Уже загружается');
-      return;
-    }
-    
-    if (videos.length === 0) {
-      console.warn('⚠️ Нет видео');
-      return;
-    }
-    
-    isLoadingVideo = true;
-    videoController.setLoadingState(true);
-    
-    try {
-      if (videoOrder.length === 0 || currentOrderIndex >= videoOrder.length) {
-        await shuffleUnwatchedVideos();
-      }
-      
-      // Обновляем данные пользователя
-      try {
-        const freshUserData = await window.telegramAuth.getUserData();
-        if (freshUserData) {
-          userFavorites = freshUserData.favorites || [];
-          userLikes = freshUserData.likes || [];
-          userDislikes = freshUserData.dislikes || [];
-          watchedVideosSet = new Set(freshUserData.watchedVideos || []);
-        }
-      } catch (error) {
-        console.error('❌ Ошибка обновления данных:', error);
-      }
-      
-      const idx = videoOrder[currentOrderIndex];
-      const videoData = videos[idx];
-      console.log(`🎬 Загружаем видео ${currentOrderIndex + 1}/${videoOrder.length}`);
-      
-      if (videoData) {
-        const videoId = videoData.filename;
-        
-        updateButtonStates(videoId);
-        resetWatchTimer();
 
-        // ===== ПРОВЕРКА ПРЕДЗАГРУЗКИ =====
-        
-        const isNextVideoReady = videoPlayerManager.isNextReady();
-        const nextVideoData = videoPlayerManager.getNextVideoData();
-        
-        if (isNextVideoReady && nextVideoData && nextVideoData.filename === videoId) {
-          console.log('🚀 МГНОВЕННОЕ ПЕРЕКЛЮЧЕНИЕ');
-          
-          // ✅ ИСПОЛЬЗУЕМ ИСПРАВЛЕННЫЙ switchToNextVideo()
-          await videoPlayerManager.switchToNextVideo();
-          
-          if (currentTab === 'main' && hasFirstClickOccurred) {
-            startWatchTracking(videoId);
-          }
-          
-        } else {
-          // Обычная загрузка
-          console.log('📁 Обычная загрузка:', videoId);
-          
-          const activePlayer = videoPlayerManager.getActivePlayer();
-          const newSrc = videoData.s3_url || videoData.url || 
-                        `https://s3.regru.cloud/dorama-shorts/${encodeURIComponent(videoData.filename)}`;
-          
-          if (activePlayer.src !== newSrc) {
-            // ✅ ВАЖНО: Проверяем и включаем звук
-            activePlayer.muted = false;
-            activePlayer.volume = 1.0;
-            
-            console.log('🔊 Устанавливаем звук для обычной загрузки:', {
-              muted: activePlayer.muted,
-              volume: activePlayer.volume
-            });
-            
-            activePlayer.src = newSrc;
-            activePlayer.load();
-            
-            if (currentTab === 'main' && hasFirstClickOccurred) {
-              activePlayer.play().then(() => {
-                console.log('✅ Видео запущено со звуком');
-                
-                // ✅ Дополнительная проверка звука
-                setTimeout(() => {
-                  if (activePlayer.muted) {
-                    console.warn('⚠️ Звук был выключен после запуска, включаем');
-                    activePlayer.muted = false;
-                  }
-                  console.log('🔊 Финальное состояние звука:', {
-                    muted: activePlayer.muted,
-                    volume: activePlayer.volume,
-                    paused: activePlayer.paused
-                  });
-                }, 100);
-                
-                startWatchTracking(videoId);
-              }).catch(error => {
-                console.error('❌ Ошибка воспроизведения:', error);
-              });
-            }
-          }
-        }
-
-        // ===== ПРЕДЗАГРУЗКА СЛЕДУЮЩЕГО =====
-        
-        setTimeout(async () => {
-          await videoPreloader.preloadNextVideo(currentOrderIndex, videoOrder, videos);
-        }, 500);
-
-        // Обновление UI
-        videoTitle.textContent = videoData.title || 'Без названия';
-        videoGenre.textContent = `${videoData.genre || 'Неизвестно'}`;
-        
-        updateLastVideoBatch(videoId);
-      }
-    } finally {
-      isLoadingVideo = false;
-      videoController.setLoadingState(false);
-    }
-  }
-  
   window.videos = videos;
   window.videoOrder = videoOrder;
   window.currentOrderIndex = currentOrderIndex;
   window.hasFirstClickOccurred = hasFirstClickOccurred;
   window.updateButtonStates = updateButtonStates;
   window.startWatchTracking = startWatchTracking;
-  window.updateLastVideoBatch = updateLastVideoBatch;
-  window.shuffleUnwatchedVideos = shuffleUnwatchedVideos;
+  window.updateLastVideoBatch = async () => {
+      await videoManager.updateLastVideoBatch();
+  };
+  window.shuffleUnwatchedVideos = async () => {
+    await videoManager.shuffleUnwatchedVideos();
+  };
 
   // ===============================
   // ЗАГРУЗКА ВИДЕО С СЕРВЕРА
   // ===============================
-  
-  async function fetchVideos() {
-    console.log('📥 Загрузка видео...');
-    try {
-      const response = await fetch('get_videos.php');
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error: ${response.status}`);
-      }
-      
-      const rawText = await response.text();
-      
-      try {
-        videos = JSON.parse(rawText);
-        window.videos = videos;
-        console.log('✅ Видео загружено:', videos.length);
-        
-        if (videos.length > 0) {
-          const existingFilenames = videos.map(v => v.filename);
-          await window.telegramAuth.cleanDeletedVideos(existingFilenames);
-          
-          if (currentSessionOrder.length > 0) {
-            restoreSessionOrder();
-          } else {
-            await shuffleUnwatchedVideos();
-          }
-          
-          await loadVideo();
-          updateFavoritesList();
-          
-          // Предзагрузка первых видео
-          setTimeout(async () => {
-            await videoPreloader.preloadNextVideo(currentOrderIndex, videoOrder, videos);
-          }, 1000);
-          
-        } else {
-          console.warn('⚠️ Массив видео пустой');
-        }
-      } catch (parseError) {
-        console.error('❌ Ошибка парсинга JSON:', parseError);
-      }
-    } catch (error) {
-      console.error('❌ Ошибка загрузки видео:', error);
-    }
-  }
-
-  function restoreSessionOrder() {
-    const existingFilenames = new Set(videos.map(v => v.filename));
-    const validOrder = currentSessionOrder.filter(filename => existingFilenames.has(filename));
-    
-    if (validOrder.length === 0) {
-      shuffleUnwatchedVideos();
-      return;
-    }
-    
-    videoOrder = [];
-    validOrder.forEach(filename => {
-      const index = videos.findIndex(v => v.filename === filename);
-      if (index !== -1 && !watchedVideosSet.has(filename)) {
-        videoOrder.push(index);
-      }
-    });
-    
-    if (videoOrder.length === 0) {
-      shuffleUnwatchedVideos();
-      return;
-    }
-    
-    currentOrderIndex = 0;
-    window.videoOrder = videoOrder;
-    window.currentOrderIndex = currentOrderIndex;
-    currentSessionOrder = validOrder;
-    console.log('✅ Порядок восстановлен:', videoOrder.length);
-  }
 
   function updateButtonStates(videoId) {
     if (!videoId) return;
@@ -886,28 +632,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         favoriteIcon.src = isFavorite ? `frontend/assets/svg/favorites-active.svg?t=${timestamp}` : `frontend/assets/svg/favorites.svg?t=${timestamp}`;
       }
     }
-  }
-
-  async function nextVideo() {
-    console.log('⏭️ Следующее видео');
-    
-    if (videos.length > 0 && videoOrder.length > 0 && currentOrderIndex < videoOrder.length) {
-      const currentVideo = videos[videoOrder[currentOrderIndex]];
-      if (currentVideo && !watchedVideosSet.has(currentVideo.filename)) {
-        addToSkippedBuffer(currentVideo.filename);
-      }
-    }
-    
-    const newIndex = currentOrderIndex + 1;
-    
-    if (newIndex >= videoOrder.length) {
-      await shuffleUnwatchedVideos();
-    } else {
-      currentOrderIndex = newIndex;
-      window.currentOrderIndex = currentOrderIndex;
-    }
-    
-    await loadVideo();
   }
 
   function showDescription() {
@@ -1194,14 +918,46 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ГЛОБАЛЬНЫЕ ФУНКЦИИ
   // ===============================
   
-  window.nextVideo = nextVideo;
-  window.loadVideo = loadVideo;
+  window.nextVideo = async () => {
+      await videoManager.nextVideo(
+          videoController,
+          updateButtonStates,
+          resetWatchTimer,
+          startWatchTracking,
+          videoTitle,
+          videoGenre,
+          currentTab,
+          hasFirstClickOccurred
+      );
+  };
+  window.loadVideo = async () => {
+      await videoManager.loadVideo(
+          videoController,
+          updateButtonStates,
+          resetWatchTimer,
+          startWatchTracking,
+          videoTitle,
+          videoGenre,
+          currentTab,
+          hasFirstClickOccurred
+      );
+  };
 
   // ===============================
   // ЗАПУСК ПРИЛОЖЕНИЯ
   // ===============================
-  
-  await fetchVideos();
+
+    await videoManager.fetchVideos(
+        updateFavoritesList,
+        videoController,
+        updateButtonStates,
+        resetWatchTimer,
+        startWatchTracking,
+        videoTitle,
+        videoGenre,
+        currentTab,
+        hasFirstClickOccurred
+    );
 
   console.log('🎥 Ожидаем первый клик');
 
@@ -1327,6 +1083,9 @@ setInterval(() => {
   
 }, 2000);
 
+    window.addEventListener("beforeunload", () => {
+        videoManager.cleanup();
+    });
 
   console.log('🎉 DoramaShorts v9.1 с исправленным звуком полностью инициализирован!');
 });

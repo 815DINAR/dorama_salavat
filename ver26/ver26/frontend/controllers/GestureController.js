@@ -1,4 +1,4 @@
-class GestureController {
+export default class GestureController {
     constructor(videoController, uiController) {
         this.videoController = videoController;
         this.uiController = uiController;

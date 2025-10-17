@@ -1,4 +1,4 @@
-class VideoPlayerManager {
+export default class VideoPlayerManager {
     constructor() {
         this.currentPlayer = document.getElementById('currentVideo');
         this.nextPlayer = document.getElementById('nextVideo');

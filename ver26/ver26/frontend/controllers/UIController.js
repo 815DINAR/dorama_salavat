@@ -1,4 +1,4 @@
-class UIController {
+export default class UIController {
     constructor(videoPlayerManager) {
         this.videoPlayerManager = videoPlayerManager;
         this.pauseIndicator = null;

@@ -18,7 +18,7 @@ class TelegramAuth {
     async init() {
         console.log('🔐 Инициализация Telegram авторизации v3.4...');
         console.log(`⏱️ Время показа загрузочного экрана: ${LOADING_SCREEN_DURATION}мс`);
-        
+
         if (!this.tg) {
             console.error('❌ Telegram WebApp API не доступен');
             // В режиме разработки можем продолжить без авторизации
@@ -36,14 +36,14 @@ class TelegramAuth {
         // Расширяем приложение на весь экран
         this.tg.ready();
         this.tg.expand();
-        
+
         // Настройка внешнего вида
         this.setupAppearance();
 
         // Получаем данные пользователя
         const initData = this.tg.initData;
         const initDataUnsafe = this.tg.initDataUnsafe;
-        
+
         console.log('📱 Telegram WebApp готов');
         console.log('👤 InitDataUnsafe:', initDataUnsafe);
 
@@ -61,16 +61,16 @@ class TelegramAuth {
 
             // Авторизуем пользователя на сервере
             const authResult = await this.authorizeOnServer();
-            
+
             if (authResult) {
                 this.isAuthorized = true;
                 this.startActivityTracking();
-                
+
                 // Небольшая задержка для плавности анимации
                 setTimeout(() => {
                     this.updateUI();
                 }, 1500); // 1.5 секунды - как у старых пользователей
-                
+
                 return true;
             }
         } else {
@@ -80,7 +80,7 @@ class TelegramAuth {
 
         return false;
     }
-    
+
     // Настройка внешнего вида приложения
     setupAppearance() {
         if (!this.tg) return;
@@ -267,10 +267,12 @@ class TelegramAuth {
             return false;
         }
     }
+
 // ⬇️ ДОБАВЬТЕ МЕТОД СЮДА, ПЕРЕД ЗАКРЫВАЮЩЕЙ СКОБКОЙ КЛАССА ⬇️
     getUserId() {
         return this.userId || '';
     }
+
     // Обновление реакций (лайк/дизлайк)
     async updateReaction(action, videoId) {
         if (!this.user) return false;
@@ -450,7 +452,7 @@ class TelegramAuth {
             videoContainer.style.display = 'block';
             videoContainer.style.opacity = '1';
         }
-        
+
         console.log('🎨 UI обновлен, загрузочный экран скрыт');
     }
 
@@ -478,10 +480,10 @@ class TelegramAuth {
     getUsername() {
         return this.user?.username || null;
     }
-    
+
     // Проверка режима разработки
     isDevelopment() {
-        return window.location.hostname === 'localhost' || 
+        return window.location.hostname === 'localhost' ||
                window.location.hostname === '127.0.0.1' ||
                window.location.hostname.includes('.local');
     }
@@ -497,7 +499,7 @@ class TelegramAuth {
             is_premium: false
         };
     }
-    
+
     // Показ уведомления
     showNotification(message) {
         if (this.tg?.showPopup) {
