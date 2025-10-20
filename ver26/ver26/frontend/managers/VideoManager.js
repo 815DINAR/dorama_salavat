@@ -180,8 +180,7 @@ export default class VideoManager {
     async loadVideo(
         videoController,
         updateButtonStates,
-        resetWatchTimer,
-        startWatchTracking,
+        watchTracker,
         videoTitle,
         videoGenre,
         currentTab,
@@ -226,7 +225,7 @@ export default class VideoManager {
                 const videoId = videoData.filename;
 
                 updateButtonStates(videoId);
-                resetWatchTimer();
+                watchTracker.resetWatchTimer();
 
                 // ===== ПРОВЕРКА ПРЕДЗАГРУЗКИ =====
 
@@ -239,7 +238,7 @@ export default class VideoManager {
                     await this.videoPlayerManager.switchToNextVideo();
 
                     if (currentTab === 'main' && hasFirstClickOccurred) {
-                        startWatchTracking(videoId);
+                        watchTracker.startWatchTracking(videoId, currentTab);
                     }
 
                 } else {
@@ -280,7 +279,7 @@ export default class VideoManager {
                                     });
                                 }, 100);
 
-                                startWatchTracking(videoId);
+                                watchTracker.startWatchTracking(videoId, currentTab);
                             }).catch(error => {
                                 console.error('❌ Ошибка воспроизведения:', error);
                             });

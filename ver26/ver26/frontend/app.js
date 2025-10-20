@@ -1,6 +1,7 @@
 import VideoPlayerManager from "./managers/VideoPlayerManager.js";
 import VideoPreloader from "./managers/VideoPreloader.js";
 import VideoManager from "./managers/VideoManager.js";
+import WatchTracker from "./managers/WatchTracker.js";
 import VideoController from "./controllers/VideoController.js";
 import GestureController from "./controllers/GestureController.js";
 import UIController from "./controllers/UIController.js";
@@ -96,9 +97,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   const videoManager = new VideoManager(videoPlayerManager, videoPreloader, window.telegramAuth);
   videoManager.initializeFromUserData(userData);
 
+  const watchTracker = new WatchTracker(window.telegramAuth, videoPlayerManager);
+  watchTracker.initializeFromUserData(userData);
+
   window.videoPreloader = videoPreloader;
   window.videoPlayerManager = videoPlayerManager;
   window.videoManager = videoManager;
+  window.watchTracker = watchTracker;
 
   console.log("✅ VideoManager инициализирован");
 
@@ -210,12 +215,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   let userLikes = userData?.likes || [];
   let userDislikes = userData?.dislikes || [];
   let currentTab = 'main';
-  
-  let watchedVideosSet = new Set(userData?.watchedVideos || []);
+
   let currentSessionOrder = userData?.currentSessionOrder || [];
-  let watchTimer = null;
-  let watchedSeconds = 0;
-  const WATCH_THRESHOLD = 5;
   
   let skippedVideosBuffer = [];
   const SKIPPED_BUFFER_SIZE = 10;
@@ -235,7 +236,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     favorites: userFavorites.length,
     likes: userLikes.length,
     dislikes: userDislikes.length,
-    watched: watchedVideosSet.size
+    watched: watchTracker.getWatchedCount()
   });
 
   // ===============================
@@ -271,8 +272,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             videoManager.loadVideo(
                 videoController,
                 updateButtonStates,
-                resetWatchTimer,
-                startWatchTracking,
+                watchTracker,
                 videoTitle,
                 videoGenre,
                 currentTab,
@@ -559,51 +559,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  function resetWatchTimer() {
-    if (watchTimer) {
-      clearInterval(watchTimer);
-      watchTimer = null;
-    }
-    watchedSeconds = 0;
-  }
-
-  function startWatchTracking(filename) {
-    resetWatchTimer();
-    
-    if (watchedVideosSet.has(filename)) {
-      return;
-    }
-    
-    console.log('⏱️ Отслеживание:', filename);
-    
-    const activePlayer = videoPlayerManager.getActivePlayer();
-    
-    watchTimer = setInterval(() => {
-      if (activePlayer && !activePlayer.paused && currentTab === 'main') {
-        watchedSeconds++;
-        
-        if (watchedSeconds >= WATCH_THRESHOLD) {
-          markVideoAsWatched(filename);
-          clearInterval(watchTimer);
-          watchTimer = null;
-        }
-      }
-    }, 1000);
-  }
-
-  async function markVideoAsWatched(filename) {
-    console.log('✅ Просмотрено:', filename);
-    
-    watchedVideosSet.add(filename);
-    
-    const skipIndex = skippedVideosBuffer.indexOf(filename);
-    if (skipIndex !== -1) {
-      skippedVideosBuffer.splice(skipIndex, 1);
-    }
-    
-    await window.telegramAuth.addWatchedVideo(filename, watchedSeconds);
-  }
-
   // ===============================
   // ИСПРАВЛЕННАЯ ФУНКЦИЯ loadVideo()
   // ===============================
@@ -613,7 +568,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.currentOrderIndex = currentOrderIndex;
   window.hasFirstClickOccurred = hasFirstClickOccurred;
   window.updateButtonStates = updateButtonStates;
-  window.startWatchTracking = startWatchTracking;
+  window.startWatchTracking = (filename, currentTab) => {
+      watchTracker.startWatchTracking(filename, currentTab);
+  };
   window.updateLastVideoBatch = async () => {
       await videoManager.updateLastVideoBatch();
   };
@@ -951,8 +908,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       await videoManager.nextVideo(
           videoController,
           updateButtonStates,
-          resetWatchTimer,
-          startWatchTracking,
+          watchTracker,
           videoTitle,
           videoGenre,
           currentTab,
@@ -963,8 +919,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       await videoManager.loadVideo(
           videoController,
           updateButtonStates,
-          resetWatchTimer,
-          startWatchTracking,
+          watchTracker,
           videoTitle,
           videoGenre,
           currentTab,
@@ -980,8 +935,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateFavoritesList,
         videoController,
         updateButtonStates,
-        resetWatchTimer,
-        startWatchTracking,
+        watchTracker,
         videoTitle,
         videoGenre,
         currentTab,
@@ -1025,7 +979,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         userFavorites = freshUserData.favorites || [];
         userLikes = freshUserData.likes || [];
         userDislikes = freshUserData.dislikes || [];
-        watchedVideosSet = new Set(freshUserData.watchedVideos || []);
+        watchTracker.updateWatchedVideos(freshUserData.watchedVideos || []);
         
         const currentVideoId = likeButton?.getAttribute('data-video-id');
         if (currentVideoId) {
@@ -1054,6 +1008,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       clearTimeout(sessionOrderUpdateTimer);
       window.telegramAuth.saveSessionOrder(currentSessionOrder);
     }
+
+    watchTracker.cleanup();
   });
 // ===============================
 // МОНИТОРИНГ КОНФЛИКТОВ
@@ -1114,6 +1070,7 @@ setInterval(() => {
 
     window.addEventListener("beforeunload", () => {
         videoManager.cleanup();
+        watchTracker.cleanup();
     });
 
   console.log('🎉 DoramaShorts v9.1 с исправленным звуком полностью инициализирован!');
