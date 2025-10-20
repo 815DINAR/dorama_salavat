@@ -344,7 +344,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             userFavorites = freshUserData.favorites || [];
         }
 
-        const favoriteVideos = videos.filter(video =>
+        const videosList = (window.videoManager && window.videoManager.getVideos) ? window.videoManager.getVideos() : videos;
+        const favoriteVideos = videosList.filter(video =>
             userFavorites.includes(video.filename)
         );
 
@@ -382,6 +383,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 favoritesList.appendChild(card); // appendChild перемещает существующий узел, если он уже есть
             });
         }
+        console.log('✅ updateFavoritesList: found', favoriteVideos.length, 'favoriteVideos. userFavorites count:', userFavorites.length);
     }
 
     function createFavoriteCard(video) {
@@ -452,22 +454,49 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const handleCardClick = (e) => {
             if (!e.target.closest('.favorite-card-remove')) {
-                const videoIndex = videos.findIndex(v => v.filename === video.filename);
+                const vm = window.videoManager;
+                const videosList = (vm && vm.getVideos) ? vm.getVideos() : videos;
+                const videoIndex = videosList.findIndex(v => v.filename === video.filename);
+
                 if (videoIndex !== -1) {
                     switchTab('main');
-                    const orderIndex = videoOrder.indexOf(videoIndex);
-                    if (orderIndex !== -1) {
-                        currentOrderIndex = orderIndex;
-                        window.currentOrderIndex = currentOrderIndex;
+                    // Если videoManager имеет текущий порядок — обновляем его корректно
+                    if (vm) {
+                        // Если этот файл уже есть в текущем порядке — просто выставим индекс
+                        const orderIndex = (vm.videoOrder || []).indexOf(videoIndex);
+                        if (orderIndex !== -1) {
+                            vm.setCurrentOrderIndex(orderIndex);
+                        } else {
+                            // Добавляем в начало порядка и устанавливаем индекс 0
+                            const newOrder = [videoIndex].concat(vm.videoOrder || []);
+                            vm.setVideoOrder(newOrder);
+                            vm.setCurrentOrderIndex(0);
+                        }
+
+                        // Запускаем загрузку через videoManager (передаём зависимости из текущего контекста)
+                        vm.loadVideo(
+                            videoController,
+                            updateButtonStates,
+                            resetWatchTimer,
+                            startWatchTracking,
+                            videoTitle,
+                            videoGenre,
+                            currentTab,
+                            hasFirstClickOccurred
+                        ).catch(err => console.error('Ошибка loadVideo через карточку избранного:', err));
                     } else {
-                        currentOrderIndex = 0;
-                        window.currentOrderIndex = currentOrderIndex;
-                        videoOrder.unshift(videoIndex);
-                        window.videoOrder = videoOrder;
-                    }
-                    const currentVideoId = likeButton?.getAttribute('data-video-id');
-                    if (currentVideoId !== video.filename) {
-                        loadVideo();
+                        // Фоллбек: если videoManager отсутствует, пробуем старую логику (менее предпочтительно)
+                        const orderIndex = videoOrder.indexOf(videoIndex);
+                        if (orderIndex !== -1) {
+                            currentOrderIndex = orderIndex;
+                            window.currentOrderIndex = currentOrderIndex;
+                        } else {
+                            currentOrderIndex = 0;
+                            window.currentOrderIndex = currentOrderIndex;
+                            videoOrder.unshift(videoIndex);
+                            window.videoOrder = videoOrder;
+                        }
+                        loadVideo().catch(err => console.error('Ошибка loadVideo (fallback):', err));
                     }
                 }
             }
