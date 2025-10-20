@@ -1,4 +1,4 @@
-class VideoController {
+export default class VideoController {
     constructor(videoPlayerManager) {
         this.videoPlayerManager = videoPlayerManager;
         this.currentTab = 'main';

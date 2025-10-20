@@ -1,4 +1,4 @@
-class DebugLogger {
+export default class DebugLogger {
     constructor() {
         this.logs = [];
         this.maxLogs = 100;
