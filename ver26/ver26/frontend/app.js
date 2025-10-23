@@ -246,6 +246,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   function switchTab(tabName) {
     currentTab = tabName;
     videoController.setCurrentTab(tabName);
+
+    if (window.videoManager) {
+        videos = window.videoManager.getVideos();
+        videoOrder = window.videoManager.getVideoOrder();
+        currentOrderIndex = window.videoManager.getCurrentOrderIndex();
+    }
     
     if (tabName === 'main') {
       mainTab.classList.add('active');
@@ -463,12 +469,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     // Если videoManager имеет текущий порядок — обновляем его корректно
                     if (vm) {
                         // Если этот файл уже есть в текущем порядке — просто выставим индекс
-                        const orderIndex = (vm.videoOrder || []).indexOf(videoIndex);
+                        const currentOrder = vm.getVideoOrder();
+                        const orderIndex = currentOrder.indexOf(videoIndex);
                         if (orderIndex !== -1) {
                             vm.setCurrentOrderIndex(orderIndex);
                         } else {
                             // Добавляем в начало порядка и устанавливаем индекс 0
-                            const newOrder = [videoIndex].concat(vm.videoOrder || []);
+                            const newOrder = [videoIndex, ...currentOrder];
                             vm.setVideoOrder(newOrder);
                             vm.setCurrentOrderIndex(0);
                         }
@@ -477,8 +484,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         vm.loadVideo(
                             videoController,
                             updateButtonStates,
-                            resetWatchTimer,
-                            startWatchTracking,
+                            watchTracker,
                             videoTitle,
                             videoGenre,
                             currentTab,
@@ -496,7 +502,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                             videoOrder.unshift(videoIndex);
                             window.videoOrder = videoOrder;
                         }
-                        loadVideo().catch(err => console.error('Ошибка loadVideo (fallback):', err));
+                        if (window.loadVideo) {
+                            window.loadVideo().catch(err => console.error('❌ Ошибка loadVideo (fallback):', err));
+                        }
                     }
                 }
             }
