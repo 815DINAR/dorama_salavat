@@ -532,7 +532,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         return card;
     }
-  
+
   // ===============================
   // ФУНКЦИИ УПРАВЛЕНИЯ ВИДЕО
   // ===============================
@@ -621,10 +621,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function showDescription() {
-    if (videos.length === 0) return;
+    const videosList = window.videoManager ? window.videoManager.getVideos() : videos;
+    const order = window.videoManager ? window.videoManager.getVideoOrder() : videoOrder;
+    const currentIdx = window.videoManager ? window.videoManager.getCurrentOrderIndex() : currentOrderIndex;
+    if (videosList.length === 0) {
+        console.warn('⚠️ Нет видео для отображения описания');
+        return;
+    }
     
-    const idx = videoOrder[currentOrderIndex];
-    const videoData = videos[idx];
+    const idx = order[currentIdx];
+    const videoData = videosList[idx];
     
     if (videoData) {
       const title = videoData.title || 'Без названия';
