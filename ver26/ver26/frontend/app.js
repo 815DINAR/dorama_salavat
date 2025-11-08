@@ -1,3 +1,4 @@
+import FavoritesManager from "./managers/FavoritesManager.js";
 import VideoPlayerManager from "./managers/VideoPlayerManager.js";
 import VideoPreloader from "./managers/VideoPreloader.js";
 import VideoManager from "./managers/VideoManager.js";
@@ -96,6 +97,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const videoManager = new VideoManager(videoPlayerManager, videoPreloader, window.telegramAuth);
   videoManager.initializeFromUserData(userData);
+
+  const favoritesManager = new FavoritesManager(videoManager, window.telegramAuth);
 
   const watchTracker = new WatchTracker(window.telegramAuth, videoPlayerManager);
   watchTracker.initializeFromUserData(userData);
@@ -341,205 +344,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ФУНКЦИИ ИЗБРАННОГО
   // ===============================
 
-    // Кеш для уже созданных карточек
-    const favoritesCardsCache = new Map();
+  // Настраиваем колбэки для FavoritesManager
+  favoritesManager.setSwitchToMainTabCallback(() => {
+    switchTab('main');
+  });
 
-    async function updateFavoritesList() {
-        const freshUserData = await window.telegramAuth.getUserData();
-        if (freshUserData) {
-            userFavorites = freshUserData.favorites || [];
-        }
+  favoritesManager.setUpdateButtonStatesCallback((videoId) => {
+    updateButtonStates(videoId);
+  });
 
-        const videosList = (window.videoManager && window.videoManager.getVideos) ? window.videoManager.getVideos() : videos;
-        const favoriteVideos = videosList.filter(video =>
-            userFavorites.includes(video.filename)
-        );
-
-        if (favoriteVideos.length === 0) {
-            favoritesEmpty.style.display = 'flex';
-            favoritesList.style.display = 'none';
-            favoritesList.classList.remove('has-items');
-            // Очищаем кеш
-            favoritesCardsCache.clear();
-        } else {
-            favoritesEmpty.style.display = 'none';
-            favoritesList.style.display = 'grid';
-            favoritesList.classList.add('has-items');
-
-            // ✅ ОПТИМИЗАЦИЯ: Не пересоздаем карточки, если они уже есть
-            const currentFilenames = new Set(favoriteVideos.map(v => v.filename));
-
-            // Удаляем карточки которых больше нет в избранном
-            Array.from(favoritesList.children).forEach(card => {
-                const filename = card.getAttribute('data-video-filename');
-                if (!currentFilenames.has(filename)) {
-                    card.remove();
-                    favoritesCardsCache.delete(filename);
-                }
-            });
-
-            // Добавляем/упорядочиваем карточки в DOM согласно порядку favoriteVideos
-            favoriteVideos.forEach(video => {
-                let card = favoritesCardsCache.get(video.filename);
-                if (!card) {
-                    card = createFavoriteCard(video);
-                    favoritesCardsCache.set(video.filename, card);
-                    console.log('➕ Добавлена карточка:', video.filename);
-                }
-                favoritesList.appendChild(card); // appendChild перемещает существующий узел, если он уже есть
-            });
-        }
-        console.log('✅ updateFavoritesList: found', favoriteVideos.length, 'favoriteVideos. userFavorites count:', userFavorites.length);
-    }
-
-    function createFavoriteCard(video) {
-        const card = document.createElement('div');
-        card.className = 'favorite-card';
-        card.setAttribute('data-video-filename', video.filename);
-
-        const thumbnail = document.createElement('div');
-        thumbnail.className = 'favorite-card-thumbnail';
-
-        const videoSrc = video.s3_url || video.url ||
-            `https://s3.regru.cloud/dorama-shorts/${encodeURIComponent(video.filename)}`;
-
-        // Создаем video элемент для миниатюры
-        const thumbnailVideo = document.createElement('video');
-        thumbnailVideo.src = videoSrc;
-        thumbnailVideo.muted = true;
-        thumbnailVideo.playsInline = true;
-        thumbnailVideo.preload = 'metadata';
-        thumbnailVideo.style.width = '100%';
-        thumbnailVideo.style.height = '100%';
-        thumbnailVideo.style.objectFit = 'cover';
-
-        // ✅ ИСПРАВЛЕНО: Загружаем кадр ОДИН РАЗ
-        let frameLoaded = false;
-
-        thumbnailVideo.addEventListener('loadedmetadata', () => {
-            if (!frameLoaded) {
-                thumbnailVideo.currentTime = Math.min(1, thumbnailVideo.duration * 0.1);
-            }
-        });
-
-        thumbnailVideo.addEventListener('seeked', () => {
-            if (!frameLoaded) {
-                frameLoaded = true;
-                console.log('✅ Миниатюра загружена:', video.filename);
-            }
-        });
-
-        // Предотвращаем повторную загрузку
-        thumbnailVideo.addEventListener('canplay', () => {
-            if (frameLoaded) {
-                thumbnailVideo.pause();
-            }
-        });
-
-        thumbnail.appendChild(thumbnailVideo);
-
-        const info = document.createElement('div');
-        info.className = 'favorite-card-info';
-
-        const title = document.createElement('div');
-        title.className = 'favorite-card-title';
-        title.textContent = video.title || 'Без названия';
-
-        const genre = document.createElement('div');
-        genre.className = 'favorite-card-genre';
-        genre.textContent = video.genre || 'Неизвестно';
-
-        info.appendChild(title);
-        info.appendChild(genre);
-
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'favorite-card-remove';
-        removeBtn.innerHTML = '⋮';
-        removeBtn.setAttribute('aria-label', 'Удалить из избранного');
-        removeBtn.setAttribute('title', 'Удалить из избранного');
-
-        const handleCardClick = (e) => {
-            if (!e.target.closest('.favorite-card-remove')) {
-                const vm = window.videoManager;
-                const videosList = (vm && vm.getVideos) ? vm.getVideos() : videos;
-                const videoIndex = videosList.findIndex(v => v.filename === video.filename);
-
-                if (videoIndex !== -1) {
-                    switchTab('main');
-                    // Если videoManager имеет текущий порядок — обновляем его корректно
-                    if (vm) {
-                        // Если этот файл уже есть в текущем порядке — просто выставим индекс
-                        const currentOrder = vm.getVideoOrder();
-                        const orderIndex = currentOrder.indexOf(videoIndex);
-                        if (orderIndex !== -1) {
-                            vm.setCurrentOrderIndex(orderIndex);
-                        } else {
-                            // Добавляем в начало порядка и устанавливаем индекс 0
-                            const newOrder = [videoIndex, ...currentOrder];
-                            vm.setVideoOrder(newOrder);
-                            vm.setCurrentOrderIndex(0);
-                        }
-
-                        // Запускаем загрузку через videoManager (передаём зависимости из текущего контекста)
-                        vm.loadVideo(
-                            videoController,
-                            updateButtonStates,
-                            watchTracker,
-                            videoTitle,
-                            videoGenre,
-                            currentTab,
-                            hasFirstClickOccurred
-                        ).catch(err => console.error('Ошибка loadVideo через карточку избранного:', err));
-                    } else {
-                        // Фоллбек: если videoManager отсутствует, пробуем старую логику (менее предпочтительно)
-                        const orderIndex = videoOrder.indexOf(videoIndex);
-                        if (orderIndex !== -1) {
-                            currentOrderIndex = orderIndex;
-                            window.currentOrderIndex = currentOrderIndex;
-                        } else {
-                            currentOrderIndex = 0;
-                            window.currentOrderIndex = currentOrderIndex;
-                            videoOrder.unshift(videoIndex);
-                            window.videoOrder = videoOrder;
-                        }
-                        if (window.loadVideo) {
-                            window.loadVideo().catch(err => console.error('❌ Ошибка loadVideo (fallback):', err));
-                        }
-                    }
-                }
-            }
-        };
-
-        card.addEventListener('click', handleCardClick);
-        card.addEventListener('touchend', (e) => {
-            e.stopPropagation();
-            handleCardClick(e);
-        }, { passive: false });
-
-        removeBtn.addEventListener('click', async (e) => {
-            e.stopPropagation();
-
-            userFavorites = userFavorites.filter(id => id !== video.filename);
-            updateButtonStates(video.filename);
-
-            const success = await window.telegramAuth.toggleFavorite(video.filename);
-            if (!success) {
-                userFavorites.push(video.filename);
-                updateButtonStates(video.filename);
-            } else {
-                card.style.opacity = '0';
-                setTimeout(() => {
-                    updateFavoritesList();
-                }, 200);
-            }
-        });
-
-        card.appendChild(thumbnail);
-        card.appendChild(info);
-        card.appendChild(removeBtn);
-
-        return card;
-    }
+  async function updateFavoritesList() {
+    userFavorites = await favoritesManager.updateFavoritesList(
+      userFavorites,
+      favoritesList,
+      favoritesEmpty
+    );
+  }
 
   // ===============================
   // ФУНКЦИИ УПРАВЛЕНИЯ ВИДЕО
