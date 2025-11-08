@@ -23,7 +23,7 @@ try {
     $formattedVideos = array_map(function($video) {
         // Просто используем s3_url если есть, или генерируем стандартный
         $url = $video['s3_url'] ?:
-          rtrim(S3_ENDPOINT, '/') . '/' . rtrim(S3_BUCKET, '/') . '/' . rawurlencode($video['filename']);
+        'https://' . rtrim(S3_ENDPOINT, '/') . '/' . rtrim(S3_BUCKET, '/') . '/' . rawurlencode($video['filename']);
         return [
             'id' => $video['id'],
             'filename' => $video['filename'],
