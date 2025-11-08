@@ -1,5 +1,6 @@
 // FavoritesManager.js
 // Управление списком избранного
+// ✅ Single Source of Truth для userFavorites
 
 export default class FavoritesManager {
     constructor(videoManager, telegramAuth) {
@@ -9,9 +10,26 @@ export default class FavoritesManager {
         // Кеш для уже созданных карточек
         this.favoritesCardsCache = new Map();
         
+        // ✅ СОСТОЯНИЕ: Единственное место хранения userFavorites
+        this.userFavorites = [];
+        
+        // DOM элементы (устанавливаются через setDOMElements)
+        this.favoritesList = null;
+        this.favoritesEmpty = null;
+        
         // Колбэки (будут установлены из app.js)
         this.onSwitchToMainTab = null;
         this.onUpdateButtonStates = null;
+        this.onLoadVideo = null;
+        this.onFavoritesChanged = null;
+    }
+
+    /**
+     * Устанавливает ссылки на DOM элементы
+     */
+    setDOMElements(favoritesList, favoritesEmpty) {
+        this.favoritesList = favoritesList;
+        this.favoritesEmpty = favoritesEmpty;
     }
 
     /**
@@ -29,76 +47,193 @@ export default class FavoritesManager {
     }
 
     /**
-     * Обновляет список избранного
+     * Устанавливает колбэк для загрузки видео
      */
-    async updateFavoritesList(userFavorites, favoritesList, favoritesEmpty) {
-        const freshUserData = await this.telegramAuth.getUserData();
-        if (freshUserData) {
-            userFavorites = freshUserData.favorites || [];
+    setLoadVideoCallback(callback) {
+        this.onLoadVideo = callback;
+    }
+
+    /**
+     * Устанавливает колбэк для уведомления об изменении избранного
+     * Вызывается когда this.userFavorites изменяется
+     */
+    setFavoritesChangedCallback(callback) {
+        this.onFavoritesChanged = callback;
+    }
+
+    /**
+     * Получает актуальный список избранного
+     * ✅ Возвращает копию массива для предотвращения внешних мутаций
+     */
+    getUserFavorites() {
+        return [...this.userFavorites];
+    }
+
+    /**
+     * Устанавливает список избранного и уведомляет об изменении
+     */
+    setUserFavorites(favorites) {
+        this.userFavorites = [...(favorites || [])];
+        this.notifyFavoritesChanged();
+    }
+
+    /**
+     * Добавляет видео в избранное (локально)
+     */
+    addToFavorites(videoId) {
+        if (!this.userFavorites.includes(videoId)) {
+            this.userFavorites.push(videoId);
+            this.notifyFavoritesChanged();
+            console.log('➕ Добавлено в избранное:', videoId);
+        }
+    }
+
+    /**
+     * Удаляет видео из избранного (локально)
+     */
+    removeFromFavorites(videoId) {
+        const index = this.userFavorites.indexOf(videoId);
+        if (index > -1) {
+            this.userFavorites.splice(index, 1);
+            this.notifyFavoritesChanged();
+            console.log('➖ Удалено из избранного:', videoId);
+        }
+    }
+
+    /**
+     * Проверяет, находится ли видео в избранном
+     */
+    isFavorite(videoId) {
+        return this.userFavorites.includes(videoId);
+    }
+
+    /**
+     * Уведомляет app.js об изменении избранного
+     */
+    notifyFavoritesChanged() {
+        if (this.onFavoritesChanged) {
+            // ✅ Передаём копию массива для защиты от внешних мутаций
+            this.onFavoritesChanged([...this.userFavorites]);
+        }
+    }
+
+    /**
+     * Обновляет список избранного из сервера и перерисовывает UI
+     */
+    async updateFavoritesList() {
+        // Проверяем, что DOM элементы установлены
+        if (!this.favoritesList || !this.favoritesEmpty) {
+            console.error('❌ FavoritesManager: DOM элементы не установлены. Вызовите setDOMElements()');
+            return;
         }
 
+        // ✅ Получаем свежие данные с сервера
+        const freshUserData = await this.telegramAuth.getUserData();
+        if (freshUserData && freshUserData.favorites) {
+            const serverFavorites = freshUserData.favorites || [];
+            
+            // Проверяем, изменились ли данные
+            const hasChanged = JSON.stringify(this.userFavorites.sort()) !== 
+                              JSON.stringify(serverFavorites.sort());
+            
+            if (hasChanged) {
+                this.userFavorites = [...serverFavorites];
+                this.notifyFavoritesChanged();
+                console.log('🔄 Синхронизировано с сервером:', this.userFavorites.length, 'избранных');
+            }
+        }
+
+        // Получаем видео для отображения
         const videosList = this.videoManager ? this.videoManager.getVideos() : [];
         const favoriteVideos = videosList.filter(video =>
-            userFavorites.includes(video.filename)
+            this.userFavorites.includes(video.filename)
         );
 
         if (favoriteVideos.length === 0) {
-            favoritesEmpty.style.display = 'flex';
-            favoritesList.style.display = 'none';
-            favoritesList.classList.remove('has-items');
-            // Очищаем кеш
-            this.favoritesCardsCache.clear();
+            this.showEmptyState();
         } else {
-            favoritesEmpty.style.display = 'none';
-            favoritesList.style.display = 'grid';
-            favoritesList.classList.add('has-items');
-
-            // ✅ ОПТИМИЗАЦИЯ: Не пересоздаем карточки, если они уже есть
-            const currentFilenames = new Set(favoriteVideos.map(v => v.filename));
-
-            // Удаляем карточки которых больше нет в избранном
-            Array.from(favoritesList.children).forEach(card => {
-                const filename = card.getAttribute('data-video-filename');
-                if (!currentFilenames.has(filename)) {
-                    card.remove();
-                    this.favoritesCardsCache.delete(filename);
-                }
-            });
-
-            // Добавляем/упорядочиваем карточки в DOM согласно порядку favoriteVideos
-            favoriteVideos.forEach(video => {
-                let card = this.favoritesCardsCache.get(video.filename);
-                if (!card) {
-                    card = this.createFavoriteCard(video, userFavorites);
-                    this.favoritesCardsCache.set(video.filename, card);
-                    console.log('➕ Добавлена карточка:', video.filename);
-                }
-                favoritesList.appendChild(card); // appendChild перемещает существующий узел, если он уже есть
-            });
+            this.renderFavoritesList(favoriteVideos);
         }
-        console.log('✅ updateFavoritesList: found', favoriteVideos.length, 'favoriteVideos. userFavorites count:', userFavorites.length);
+
+        console.log('✅ updateFavoritesList: отображено', favoriteVideos.length, 'видео');
+    }
+
+    /**
+     * Показывает пустое состояние (нет избранного)
+     */
+    showEmptyState() {
+        this.favoritesEmpty.style.display = 'flex';
+        this.favoritesList.style.display = 'none';
+        this.favoritesList.classList.remove('has-items');
+        this.favoritesCardsCache.clear();
+    }
+
+    /**
+     * Рендерит список избранного с оптимизацией DOM операций
+     */
+    renderFavoritesList(favoriteVideos) {
+        this.favoritesEmpty.style.display = 'none';
+        this.favoritesList.style.display = 'grid';
+        this.favoritesList.classList.add('has-items');
+
+        const currentFilenames = new Set(favoriteVideos.map(v => v.filename));
+
+        // Удаляем карточки которых больше нет в избранном
+        Array.from(this.favoritesList.children).forEach(card => {
+            const filename = card.getAttribute('data-video-filename');
+            if (!currentFilenames.has(filename)) {
+                card.remove();
+                this.favoritesCardsCache.delete(filename);
+            }
+        });
+
+        // ✅ БАТЧИНГ DOM операций для минимизации reflow
+        const cardsToAdd = [];
         
-        return userFavorites;
+        favoriteVideos.forEach((video, index) => {
+            let card = this.favoritesCardsCache.get(video.filename);
+            
+            if (!card) {
+                card = this.createFavoriteCard(video);
+                this.favoritesCardsCache.set(video.filename, card);
+                console.log('➕ Создана карточка:', video.filename);
+                cardsToAdd.push({ card, index });
+            } else {
+                // Проверяем позицию
+                const currentIndex = Array.from(this.favoritesList.children).indexOf(card);
+                if (currentIndex !== index) {
+                    cardsToAdd.push({ card, index });
+                }
+            }
+        });
+
+        // ✅ Применяем все изменения за один раз
+        if (cardsToAdd.length > 0) {
+            const fragment = document.createDocumentFragment();
+            const orderedCards = favoriteVideos.map(video => 
+                this.favoritesCardsCache.get(video.filename)
+            );
+            
+            this.favoritesList.innerHTML = '';
+            orderedCards.forEach(card => fragment.appendChild(card));
+            this.favoritesList.appendChild(fragment);
+            
+            console.log(`🔄 Переупорядочено ${cardsToAdd.length} карточек`);
+        }
     }
 
     /**
      * Создает карточку избранного видео
      */
-    createFavoriteCard(video, userFavorites) {
+    createFavoriteCard(video) {
         const card = document.createElement('div');
         card.className = 'favorite-card';
         card.setAttribute('data-video-filename', video.filename);
 
-        // Создаем миниатюру
         const thumbnail = this.createThumbnail(video);
-        
-        // Создаем информацию о видео
         const info = this.createVideoInfo(video);
-        
-        // Создаем кнопку удаления
-        const removeBtn = this.createRemoveButton(video, userFavorites);
+        const removeBtn = this.createRemoveButton(video);
 
-        // Обработчик клика по карточке
         const handleCardClick = (e) => {
             if (!e.target.closest('.favorite-card-remove')) {
                 this.playVideoFromCard(video);
@@ -128,7 +263,6 @@ export default class FavoritesManager {
         const videoSrc = video.s3_url || video.url ||
             `https://s3.regru.cloud/dorama-shorts/${encodeURIComponent(video.filename)}`;
 
-        // Создаем video элемент для миниатюры
         const thumbnailVideo = document.createElement('video');
         thumbnailVideo.src = videoSrc;
         thumbnailVideo.muted = true;
@@ -138,7 +272,6 @@ export default class FavoritesManager {
         thumbnailVideo.style.height = '100%';
         thumbnailVideo.style.objectFit = 'cover';
 
-        // ✅ ИСПРАВЛЕНО: Загружаем кадр ОДИН РАЗ
         let frameLoaded = false;
 
         thumbnailVideo.addEventListener('loadedmetadata', () => {
@@ -154,7 +287,6 @@ export default class FavoritesManager {
             }
         });
 
-        // Предотвращаем повторную загрузку
         thumbnailVideo.addEventListener('canplay', () => {
             if (frameLoaded) {
                 thumbnailVideo.pause();
@@ -189,7 +321,7 @@ export default class FavoritesManager {
     /**
      * Создает кнопку удаления
      */
-    createRemoveButton(video, userFavorites) {
+    createRemoveButton(video) {
         const removeBtn = document.createElement('button');
         removeBtn.className = 'favorite-card-remove';
         removeBtn.innerHTML = '⋮';
@@ -198,7 +330,7 @@ export default class FavoritesManager {
 
         removeBtn.addEventListener('click', async (e) => {
             e.stopPropagation();
-            await this.handleRemoveClick(video, userFavorites);
+            await this.handleRemoveClick(video);
         });
 
         return removeBtn;
@@ -206,14 +338,13 @@ export default class FavoritesManager {
 
     /**
      * Обработчик удаления видео из избранного
+     * ✅ ИСПРАВЛЕНО: Работает только с внутренним состоянием
      */
-    async handleRemoveClick(video, userFavorites) {
-        // Удаляем локально
-        const index = userFavorites.indexOf(video.filename);
-        if (index > -1) {
-            userFavorites.splice(index, 1);
-        }
+    async handleRemoveClick(video) {
+        // ✅ Удаляем из внутреннего состояния
+        this.removeFromFavorites(video.filename);
 
+        // Обновляем UI кнопок
         if (this.onUpdateButtonStates) {
             this.onUpdateButtonStates(video.filename);
         }
@@ -222,21 +353,21 @@ export default class FavoritesManager {
         const success = await this.telegramAuth.toggleFavorite(video.filename);
         
         if (!success) {
-            // Откатываем изменения
-            userFavorites.push(video.filename);
+            // ✅ Откатываем изменения
+            this.addToFavorites(video.filename);
+            
             if (this.onUpdateButtonStates) {
                 this.onUpdateButtonStates(video.filename);
             }
+            
+            console.error('❌ Не удалось удалить из избранного на сервере');
         } else {
             // Анимация удаления
             const card = this.favoritesCardsCache.get(video.filename);
             if (card) {
                 card.style.opacity = '0';
-                setTimeout(() => {
-                    // Обновляем список через 200мс для плавности
-                    const favoritesList = document.getElementById('favoritesList');
-                    const favoritesEmpty = document.getElementById('favoritesEmpty');
-                    this.updateFavoritesList(userFavorites, favoritesList, favoritesEmpty);
+                setTimeout(async () => {
+                    await this.updateFavoritesList();
                 }, 200);
             }
         }
@@ -250,28 +381,25 @@ export default class FavoritesManager {
         const videoIndex = videosList.findIndex(v => v.filename === video.filename);
 
         if (videoIndex !== -1) {
-            // Переключаемся на главную вкладку
             if (this.onSwitchToMainTab) {
                 this.onSwitchToMainTab();
             }
 
-            // Если этот файл уже есть в текущем порядке — просто выставим индекс
             const currentOrder = this.videoManager.getVideoOrder();
             const orderIndex = currentOrder.indexOf(videoIndex);
             
             if (orderIndex !== -1) {
                 this.videoManager.setCurrentOrderIndex(orderIndex);
             } else {
-                // Добавляем в начало порядка и устанавливаем индекс 0
                 const newOrder = [videoIndex, ...currentOrder];
                 this.videoManager.setVideoOrder(newOrder);
                 this.videoManager.setCurrentOrderIndex(0);
             }
 
-            // Запускаем загрузку видео
-            // Этот вызов должен быть настроен через app.js
-            if (window.loadVideo) {
-                window.loadVideo().catch(err => console.error('Ошибка loadVideo через карточку избранного:', err));
+            if (this.onLoadVideo) {
+                this.onLoadVideo().catch(err => 
+                    console.error('❌ Ошибка loadVideo через карточку избранного:', err)
+                );
             }
         }
     }

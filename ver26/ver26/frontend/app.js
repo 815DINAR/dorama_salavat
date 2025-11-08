@@ -98,7 +98,41 @@ document.addEventListener('DOMContentLoaded', async () => {
   const videoManager = new VideoManager(videoPlayerManager, videoPreloader, window.telegramAuth);
   videoManager.initializeFromUserData(userData);
 
+  // ✅ Создаём FavoritesManager
   const favoritesManager = new FavoritesManager(videoManager, window.telegramAuth);
+
+  // ✅ Устанавливаем начальное состояние
+  favoritesManager.setUserFavorites(userFavorites);
+
+  // ✅ Устанавливаем DOM элементы
+  favoritesManager.setDOMElements(favoritesList, favoritesEmpty);
+
+  // ✅ НОВЫЙ: Колбэк для синхронизации состояния избранного
+  favoritesManager.setFavoritesChangedCallback((updatedFavorites) => {
+    console.log('🔄 Синхронизация избранного:', updatedFavorites.length, 'видео');
+    userFavorites = updatedFavorites;
+  });
+
+  // ✅ Настраиваем колбэки
+  favoritesManager.setSwitchToMainTabCallback(() => {
+      switchTab('main');
+  });
+
+  favoritesManager.setUpdateButtonStatesCallback((videoId) => {
+      updateButtonStates(videoId);
+  });
+
+  favoritesManager.setLoadVideoCallback(async () => {
+      await videoManager.loadVideo(
+          videoController,
+          updateButtonStates,
+          watchTracker,
+          videoTitle,
+          videoGenre,
+          currentTab,
+          hasFirstClickOccurred
+      );
+  });
 
   const watchTracker = new WatchTracker(window.telegramAuth, videoPlayerManager);
   watchTracker.initializeFromUserData(userData);
@@ -354,11 +388,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   async function updateFavoritesList() {
-    userFavorites = await favoritesManager.updateFavoritesList(
-      userFavorites,
-      favoritesList,
-      favoritesEmpty
-    );
+    // ✅ FavoritesManager управляет состоянием и уведомляет через колбэк
+    await favoritesManager.updateFavoritesList();
+    // ✅ userFavorites уже обновлён через onFavoritesChanged колбэк
   }
 
   // ===============================
@@ -620,29 +652,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const freshUserData = await window.telegramAuth.getUserData();
       if (freshUserData) {
-        userFavorites = freshUserData.favorites || [];
         userLikes = freshUserData.likes || [];
         userDislikes = freshUserData.dislikes || [];
+
+        favoritesManager.setUserFavorites(freshUserData.favorites || []);
       }
     } catch (error) {
       console.error('❌ Ошибка загрузки данных:', error);
     }
     
-    const isFavorite = userFavorites.includes(videoId);
+    const isFavorite = favoritesManager.isFavorite(videoId);
     
     if (isFavorite) {
-      userFavorites = userFavorites.filter(id => id !== videoId);
+      favoritesManager.removeFromFavorites(videoId);
     } else {
-      userFavorites.push(videoId);
+      favoritesManager.addToFavorites(videoId);
     }
     updateButtonStates(videoId);
     
     window.telegramAuth.toggleFavorite(videoId).then(success => {
       if (!success) {
         if (isFavorite) {
-          userFavorites.push(videoId);
+          favoritesManager.addToFavorites(videoId);
         } else {
-          userFavorites = userFavorites.filter(id => id !== videoId);
+          favoritesManager.removeFromFavorites(videoId);
         }
         updateButtonStates(videoId);
       }
@@ -810,9 +843,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const freshUserData = await window.telegramAuth.getUserData();
       if (freshUserData) {
-        userFavorites = freshUserData.favorites || [];
         userLikes = freshUserData.likes || [];
         userDislikes = freshUserData.dislikes || [];
+        favoritesManager.setUserFavorites(freshUserData.favorites || []);
         watchTracker.updateWatchedVideos(freshUserData.watchedVideos || []);
         
         const currentVideoId = likeButton?.getAttribute('data-video-id');
