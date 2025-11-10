@@ -36,6 +36,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   let userLikes = userData?.likes || [];
   let userDislikes = userData?.dislikes || [];
   let currentSessionOrder = userData?.currentSessionOrder || [];
+  const favoritesList = document.getElementById('favoritesList');
+  const favoritesEmpty = document.getElementById('favoritesEmpty');
+  const videoTitle = document.getElementById('videoTitle');
+  const videoGenre = document.getElementById('videoGenre');
+  let currentTab = 'main';
    
   // ===============================
   // DEBUG ACCESS
@@ -154,8 +159,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ===============================
   
   const videoPlayer = videoPlayerManager.getActivePlayer();
-  const videoTitle = document.getElementById('videoTitle');
-  const videoGenre = document.getElementById('videoGenre');
   const likeButton = document.getElementById('likeButton');
   const dislikeButton = document.getElementById('dislikeButton');
   const favoriteButton = document.getElementById('favoriteButton');
@@ -169,8 +172,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const favoritesTab = document.getElementById('favoritesTab');
   const mainContent = document.getElementById('mainContent');
   const favoritesContent = document.getElementById('favoritesContent');
-  const favoritesList = document.getElementById('favoritesList');
-  const favoritesEmpty = document.getElementById('favoritesEmpty');
 
   // ===============================
   // ОВЕРЛЕЙ ПЕРВОГО КЛИКА
@@ -253,7 +254,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   let videos = [];
   let videoOrder = [];
   let currentOrderIndex = 0;
-  let currentTab = 'main';
   
   let skippedVideosBuffer = [];
   const SKIPPED_BUFFER_SIZE = 10;
