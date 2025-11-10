@@ -132,6 +132,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       updateButtonStates(videoId);
   });
 
+  const watchTracker = new WatchTracker(window.telegramAuth, videoPlayerManager);
+  watchTracker.initializeFromUserData(userData);
+
   favoritesManager.setLoadVideoCallback(async () => {
       await videoManager.loadVideo(
           videoController,
@@ -143,9 +146,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           hasFirstClickOccurred
       );
   });
-
-  const watchTracker = new WatchTracker(window.telegramAuth, videoPlayerManager);
-  watchTracker.initializeFromUserData(userData);
 
   window.videoPreloader = videoPreloader;
   window.videoPlayerManager = videoPlayerManager;
