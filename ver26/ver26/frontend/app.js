@@ -31,6 +31,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (userData) {
     console.log('📊 Данные пользователя загружены');
   }
+
+  let userFavorites = userData?.favorites || [];
+  let userLikes = userData?.likes || [];
+  let userDislikes = userData?.dislikes || [];
+  let currentSessionOrder = userData?.currentSessionOrder || [];
    
   // ===============================
   // DEBUG ACCESS
@@ -248,12 +253,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let videos = [];
   let videoOrder = [];
   let currentOrderIndex = 0;
-  let userFavorites = userData?.favorites || [];
-  let userLikes = userData?.likes || [];
-  let userDislikes = userData?.dislikes || [];
   let currentTab = 'main';
-
-  let currentSessionOrder = userData?.currentSessionOrder || [];
   
   let skippedVideosBuffer = [];
   const SKIPPED_BUFFER_SIZE = 10;
@@ -377,15 +377,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ===============================
   // ФУНКЦИИ ИЗБРАННОГО
   // ===============================
-
-  // Настраиваем колбэки для FavoritesManager
-  favoritesManager.setSwitchToMainTabCallback(() => {
-    switchTab('main');
-  });
-
-  favoritesManager.setUpdateButtonStatesCallback((videoId) => {
-    updateButtonStates(videoId);
-  });
 
   async function updateFavoritesList() {
     // ✅ FavoritesManager управляет состоянием и уведомляет через колбэк

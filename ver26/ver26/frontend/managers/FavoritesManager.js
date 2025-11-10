@@ -3,6 +3,9 @@
 // ✅ Single Source of Truth для userFavorites
 
 export default class FavoritesManager {
+    static THUMBNAIL_SEEK_PERCENTAGE = 0.1;
+    static CARD_REMOVAL_ANIMATION_DURATION = 200;
+
     constructor(videoManager, telegramAuth) {
         this.videoManager = videoManager;
         this.telegramAuth = telegramAuth;
@@ -133,8 +136,11 @@ export default class FavoritesManager {
             const serverFavorites = freshUserData.favorites || [];
             
             // Проверяем, изменились ли данные
-            const hasChanged = JSON.stringify(this.userFavorites.sort()) !== 
-                              JSON.stringify(serverFavorites.sort());
+            const userSet = new Set(this.userFavorites);
+            const serverSet = new Set(serverFavorites);
+            const hasChanged = userSet.size !== serverSet.size ||
+                [...userSet].some(id => !serverSet.has(id)) ||
+                [...serverSet].some(id => !userSet.has(id));
             
             if (hasChanged) {
                 this.userFavorites = [...serverFavorites];
@@ -188,7 +194,7 @@ export default class FavoritesManager {
         });
 
         // ✅ БАТЧИНГ DOM операций для минимизации reflow
-        const cardsToAdd = [];
+        const cardsToReorder = [];
         
         favoriteVideos.forEach((video, index) => {
             let card = this.favoritesCardsCache.get(video.filename);
@@ -197,28 +203,32 @@ export default class FavoritesManager {
                 card = this.createFavoriteCard(video);
                 this.favoritesCardsCache.set(video.filename, card);
                 console.log('➕ Создана карточка:', video.filename);
-                cardsToAdd.push({ card, index });
+                cardsToReorder.push({ card, index });
             } else {
                 // Проверяем позицию
                 const currentIndex = Array.from(this.favoritesList.children).indexOf(card);
                 if (currentIndex !== index) {
-                    cardsToAdd.push({ card, index });
+                    cardsToReorder.push({ card, index });
                 }
             }
         });
 
         // ✅ Применяем все изменения за один раз
-        if (cardsToAdd.length > 0) {
+        if (cardsToReorder.length > 0) {
             const fragment = document.createDocumentFragment();
             const orderedCards = favoriteVideos.map(video => 
                 this.favoritesCardsCache.get(video.filename)
             );
             
-            this.favoritesList.innerHTML = '';
-            orderedCards.forEach(card => fragment.appendChild(card));
-            this.favoritesList.appendChild(fragment);
+            // Reorder cards in place without clearing the container
+            orderedCards.forEach((card, idx) => {
+                const currentChild = this.favoritesList.children[idx];
+                if (currentChild !== card) {
+                    this.favoritesList.insertBefore(card, currentChild || null);
+                }
+            });
             
-            console.log(`🔄 Переупорядочено ${cardsToAdd.length} карточек`);
+            console.log(`🔄 Переупорядочено ${cardsToReorder.length} карточек`);
         }
     }
 
@@ -276,7 +286,7 @@ export default class FavoritesManager {
 
         thumbnailVideo.addEventListener('loadedmetadata', () => {
             if (!frameLoaded) {
-                thumbnailVideo.currentTime = Math.min(1, thumbnailVideo.duration * 0.1);
+                thumbnailVideo.currentTime = Math.min(1, thumbnailVideo.duration * FavoritesManager.THUMBNAIL_SEEK_PERCENTAGE);
             }
         });
 
@@ -338,7 +348,8 @@ export default class FavoritesManager {
 
     /**
      * Обработчик удаления видео из избранного
-     * ✅ ИСПРАВЛЕНО: Работает только с внутренним состоянием
+     * Сначала обновляет внутреннее состояние, затем синхронизирует с сервером.
+     * В случае ошибки на сервере откатывает изменения.
      */
     async handleRemoveClick(video) {
         // ✅ Удаляем из внутреннего состояния
@@ -368,7 +379,7 @@ export default class FavoritesManager {
                 card.style.opacity = '0';
                 setTimeout(async () => {
                     await this.updateFavoritesList();
-                }, 200);
+                }, FavoritesManager.CARD_REMOVAL_ANIMATION_DURATION);
             }
         }
     }
