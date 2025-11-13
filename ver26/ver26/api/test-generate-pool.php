@@ -129,9 +129,10 @@ function makeRequest($url, $data) {
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     
     if (curl_errno($ch)) {
-        echo "CURL Error: " . curl_error($ch) . "\n";
+        $curlErrorMsg = curl_error($ch);
+        echo "CURL Error: " . $curlErrorMsg . "\n";
         curl_close($ch);
-        return ['success' => false, 'error' => 'CURL error'];
+        return ['success' => false, 'error' => 'CURL error: ' . $curlErrorMsg];
     }
     
     curl_close($ch);
