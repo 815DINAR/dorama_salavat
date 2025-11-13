@@ -96,8 +96,7 @@ try {
      *    - user_watch_history.user_id = переданный userId
      * 3. Фильтруем WHERE user_watch_history.video_id IS NULL
      *    Это даёт нам только те видео, которых НЕТ в истории просмотров пользователя
-     * 4. Сортируем случайным образом (ORDER BY RAND())
-     * 5. Берём первые N записей (LIMIT)
+     * 4. Берём первые N записей (LIMIT)
      */
     
     $sql = "
