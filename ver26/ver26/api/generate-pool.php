@@ -120,7 +120,6 @@ try {
             ON v.id = uwh.video_id AND uwh.user_id = :user_id
         WHERE v.is_active = 1 
             AND uwh.video_id IS NULL
-        ORDER BY RAND()
         LIMIT :pool_size
     ";
     
