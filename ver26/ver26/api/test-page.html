@@ -126,6 +126,7 @@
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
+            return await response.json();
         }
 
         function showResult(elementId, message, isSuccess) {
