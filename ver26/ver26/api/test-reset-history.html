@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест Reset History API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #ff5722;
+        }
+        .info-box {
+            background: #333;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid #2196f3;
+        }
+        button {
+            background: #ff5722;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #e64a19;
+        }
+        button.secondary {
+            background: #2196f3;
+        }
+        button.secondary:hover {
+            background: #1976d2;
+        }
+        button.danger {
+            background: #f44336;
+        }
+        button.danger:hover {
+            background: #d32f2f;
+        }
+        .result {
+            background: #333;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success { color: #4caf50; }
+        .error { color: #f44336; }
+        .warning { color: #ff9800; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .stat-card {
+            background: #333;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ff5722;
+        }
+        .stat-label {
+            color: #999;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Тест API: reset-history.php</h1>
+    
+    <div class="info-box">
+        <h3>⚠️ ВНИМАНИЕ: Это удалит всю историю просмотров!</h3>
+        <p>Используйте тестового пользователя для безопасности.</p>
+        <p><strong>Текущий тестовый User ID:</strong> <span id="currentUserId">590563384</span></p>
+        <button class="secondary" onclick="changeUserId()">Изменить User ID</button>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Шаг 1: Проверить текущее состояние</h2>
+        <p>Сначала давайте посмотрим, сколько видео просмотрел пользователь</p>
+        <button class="secondary" onclick="checkCurrentStatus()">Проверить статус</button>
+        <div class="stats" id="statsContainer"></div>
+        <div id="result0" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>➕ Шаг 2: Добавить тестовые просмотры</h2>
+        <p>Добавим несколько тестовых просмотров, чтобы было что удалять</p>
+        <button class="secondary" onclick="addTestWatches()">Добавить 5 тестовых просмотров</button>
+        <div id="result1" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🗑️ Шаг 3: Сбросить историю</h2>
+        <p>Удалим всю историю просмотров пользователя</p>
+        <button class="danger" onclick="testResetHistory()">⚠️ СБРОСИТЬ ИСТОРИЮ</button>
+        <div id="result2" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>✅ Шаг 4: Проверить результат</h2>
+        <p>Убедимся, что история действительно очищена</p>
+        <button class="secondary" onclick="verifyReset()">Проверить очистку</button>
+        <div id="result3" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔄 Полный тест</h2>
+        <p>Выполнить все шаги автоматически</p>
+        <button onclick="runFullTest()">Запустить полный тест</button>
+        <div id="resultFull" class="result"></div>
+    </div>
+
+    <script>
+        const MARK_WATCHED_API = '../api/mark-watched.php';
+        const RESET_HISTORY_API = '../api/reset-history.php';
+        const GENERATE_POOL_API = '../api/generate-pool.php';
+        
+        let TEST_USER_ID = 590563384; // Замените на реального тестового пользователя
+
+        function changeUserId() {
+            const newUserId = prompt('Введите новый User ID:', TEST_USER_ID);
+            if (newUserId && !isNaN(newUserId)) {
+                TEST_USER_ID = parseInt(newUserId);
+                document.getElementById('currentUserId').textContent = TEST_USER_ID;
+                console.log('User ID изменён на:', TEST_USER_ID);
+            }
+        }
+
+        async function checkCurrentStatus() {
+            const resultDiv = document.getElementById('result0');
+            const statsDiv = document.getElementById('statsContainer');
+            resultDiv.innerHTML = '⏳ Проверяем текущее состояние...';
+            statsDiv.innerHTML = '';
+            
+            try {
+                const response = await fetch(GENERATE_POOL_API, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: TEST_USER_ID,
+                        poolSize: 1
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const totalVideos = data.poolSize + data.remainingCount;
+                    const watchedCount = totalVideos - data.remainingCount;
+                    
+                    statsDiv.innerHTML = `
+                        <div class="stat-card">
+                            <div class="stat-value">${watchedCount}</div>
+                            <div class="stat-label">Просмотрено видео</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${data.remainingCount}</div>
+                            <div class="stat-label">Осталось видео</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${totalVideos}</div>
+                            <div class="stat-label">Всего видео</div>
+                        </div>
+                    `;
+                    
+                    resultDiv.innerHTML = `<span class="success">✅ Статус получен</span>\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    resultDiv.innerHTML = `<span class="error">❌ Ошибка:</span>\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ Ошибка сети:</span>\n${error.message}`;
+            }
+        }
+
+        async function addTestWatches() {
+            const resultDiv = document.getElementById('result1');
+            resultDiv.innerHTML = '⏳ Добавляем тестовые просмотры...';
+            
+            try {
+                const results = [];
+                
+                for (let i = 1; i <= 5; i++) {
+                    const response = await fetch(MARK_WATCHED_API, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: TEST_USER_ID,
+                            videoId: i
+                        })
+                    });
+                    const data = await response.json();
+                    results.push({ videoId: i, success: data.success, isNewRecord: data.isNewRecord });
+                    
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                const successCount = results.filter(r => r.success).length;
+                const newRecords = results.filter(r => r.isNewRecord).length;
+                
+                resultDiv.innerHTML = `
+<span class="success">✅ Добавлено просмотров: ${successCount}/5</span>
+<span class="success">Из них новых записей: ${newRecords}</span>
+
+${JSON.stringify(results, null, 2)}
+                `.trim();
+                
+                // Автоматически обновляем статус
+                await new Promise(resolve => setTimeout(resolve, 500));
+                await checkCurrentStatus();
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ Ошибка:</span>\n${error.message}`;
+            }
+        }
+
+        async function testResetHistory() {
+            const resultDiv = document.getElementById('result2');
+            
+            // Дополнительное подтверждение
+            if (!confirm(`Вы уверены, что хотите сбросить историю для пользователя ${TEST_USER_ID}?`)) {
+                resultDiv.innerHTML = '<span class="warning">⚠️ Операция отменена пользователем</span>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '⏳ Сбрасываем историю...';
+            
+            try {
+                const response = await fetch(RESET_HISTORY_API, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: TEST_USER_ID
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+<span class="success">✅ История успешно сброшена!</span>
+<span class="success">Удалено записей: ${data.deletedCount}</span>
+<span class="success">Время выполнения: ${data.executionTime}ms</span>
+
+${JSON.stringify(data, null, 2)}
+                    `.trim();
+                    
+                    console.log('История сброшена:', data);
+                    
+                    // Автоматически проверяем результат
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await verifyReset();
+                    
+                } else {
+                    resultDiv.innerHTML = `<span class="error">❌ Ошибка:</span>\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ Ошибка сети:</span>\n${error.message}`;
+            }
+        }
+
+        async function verifyReset() {
+            const resultDiv = document.getElementById('result3');
+            resultDiv.innerHTML = '⏳ Проверяем результат очистки...';
+            
+            try {
+                const response = await fetch(GENERATE_POOL_API, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: TEST_USER_ID,
+                        poolSize: 50
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const totalVideos = data.poolSize + data.remainingCount;
+                    
+                    if (data.remainingCount === totalVideos || data.poolSize === totalVideos) {
+                        resultDiv.innerHTML = `
+<span class="success">✅ УСПЕХ! История полностью очищена</span>
+<span class="success">Все ${totalVideos} видео теперь доступны для просмотра</span>
+
+Детали:
+- Получено в пуле: ${data.poolSize}
+- Осталось непросмотренных: ${data.remainingCount}
+- Всего видео: ${totalVideos}
+
+${JSON.stringify(data, null, 2)}
+                        `.trim();
+                    } else {
+                        resultDiv.innerHTML = `
+<span class="warning">⚠️ ВНИМАНИЕ! История не полностью очищена</span>
+Доступно: ${data.remainingCount} из ${totalVideos}
+
+${JSON.stringify(data, null, 2)}
+                        `.trim();
+                    }
+                } else {
+                    resultDiv.innerHTML = `<span class="error">❌ Ошибка проверки:</span>\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ Ошибка сети:</span>\n${error.message}`;
+            }
+        }
+
+        async function runFullTest() {
+            const resultDiv = document.getElementById('resultFull');
+            resultDiv.innerHTML = '⏳ Запуск полного теста...\n\n';
+            
+            try {
+                // Шаг 1
+                resultDiv.innerHTML += '📊 Шаг 1: Проверка текущего статуса...\n';
+                await checkCurrentStatus();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Шаг 2
+                resultDiv.innerHTML += '➕ Шаг 2: Добавление тестовых просмотров...\n';
+                await addTestWatches();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Шаг 3
+                resultDiv.innerHTML += '🗑️ Шаг 3: Сброс истории...\n';
+                await testResetHistory();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Шаг 4
+                resultDiv.innerHTML += '✅ Шаг 4: Проверка результата...\n';
+                await verifyReset();
+                
+                resultDiv.innerHTML += '\n<span class="success">✅ ПОЛНЫЙ ТЕСТ ЗАВЕРШЁН!</span>';
+                
+            } catch (error) {
+                resultDiv.innerHTML += `\n<span class="error">❌ Ошибка в полном тесте:</span>\n${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
