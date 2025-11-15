@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест Mark Watched API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        button {
+            background: #ff5722;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #e64a19;
+        }
+        .result {
+            background: #333;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { color: #4caf50; }
+        .error { color: #f44336; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Тест API: mark-watched.php</h1>
+    
+    <div class="test-section">
+        <h2>Тест 1: Первая отметка видео</h2>
+        <button onclick="testFirstMark()">Выполнить тест</button>
+        <div id="result1" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Тест 2: Повторная отметка (должна обновить)</h2>
+        <button onclick="testDuplicateMark()">Выполнить тест</button>
+        <div id="result2" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Тест 3: Несколько видео подряд</h2>
+        <button onclick="testMultipleMark()">Выполнить тест</button>
+        <div id="result3" class="result"></div>
+    </div>
+
+    <script>
+        const API_URL = '../api/mark-watched.php';
+        const TEST_USER_ID = 1062716814; // Замените на реальный
+        const TEST_VIDEO_ID = 1; // Замените на реальный
+
+        async function testFirstMark() {
+            const resultDiv = document.getElementById('result1');
+            resultDiv.innerHTML = '⏳ Выполняется запрос...';
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: TEST_USER_ID,
+                        videoId: TEST_VIDEO_ID
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `<span class="success">✅ Успех!</span>\n${JSON.stringify(data, null, 2)}`;
+                    console.log('Тест 1 пройден:', data);
+                } else {
+                    resultDiv.innerHTML = `<span class="error">❌ Ошибка:</span>\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ Ошибка сети:</span>\n${error.message}`;
+            }
+        }
+
+        async function testDuplicateMark() {
+            const resultDiv = document.getElementById('result2');
+            resultDiv.innerHTML = '⏳ Выполняется запрос...';
+            
+            try {
+                // Отправляем тот же userId и videoId дважды
+                const response1 = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: TEST_USER_ID,
+                        videoId: TEST_VIDEO_ID
+                    })
+                });
+                const data1 = await response1.json();
+                
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                const response2 = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: TEST_USER_ID,
+                        videoId: TEST_VIDEO_ID
+                    })
+                });
+                const data2 = await response2.json();
+                
+                resultDiv.innerHTML = `
+<span class="success">Запрос 1:</span>
+isNewRecord: ${data1.isNewRecord} (должно быть true или false)
+${JSON.stringify(data1, null, 2)}
+
+<span class="success">Запрос 2:</span>
+isNewRecord: ${data2.isNewRecord} (должно быть false - обновление)
+${JSON.stringify(data2, null, 2)}
+                `.trim();
+                
+                console.log('Тест 2 пройден:', { data1, data2 });
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ Ошибка:</span>\n${error.message}`;
+            }
+        }
+
+        async function testMultipleMark() {
+            const resultDiv = document.getElementById('result3');
+            resultDiv.innerHTML = '⏳ Выполняется 5 запросов...';
+            
+            try {
+                const results = [];
+                
+                for (let i = 0; i < 5; i++) {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: TEST_USER_ID,
+                            videoId: TEST_VIDEO_ID + i // разные видео
+                        })
+                    });
+                    const data = await response.json();
+                    results.push({ videoId: TEST_VIDEO_ID + i, ...data });
+                    
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                resultDiv.innerHTML = `<span class="success">✅ Все запросы выполнены!</span>\n${JSON.stringify(results, null, 2)}`;
+                console.log('Тест 3 пройден:', results);
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ Ошибка:</span>\n${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
