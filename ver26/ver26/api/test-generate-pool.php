@@ -5,7 +5,7 @@
  */
 
 // Настройки теста
-$API_URL = 'https://doramashortsru.ru/Salavat_ver38/api/generate-pool.php'; // Измените на ваш URL
+$API_URL = 'https://doramashortsru.ru/Salavat_ver39/api/generate-pool.php'; // Измените на ваш URL
 $TEST_USER_ID = 590563384; // Ваш тестовый user_id
 $TEST_POOL_SIZE = 10;
 
