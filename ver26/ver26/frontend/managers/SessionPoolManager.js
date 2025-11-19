@@ -203,20 +203,22 @@ export default class SessionPoolManager {
             // Проверяем предзагруженный пул
             if (this.nextPoolCache) {
                 console.log('⚡ Используем предзагруженный пул');
+                let result;
                 try {
-                    const result = await this.nextPoolCache;
+                    result = await this.nextPoolCache;
+                } catch (error) {
+                    console.error('❌ Ошибка использования предзагруженного пула:', error);
+                } finally {
                     this.nextPoolCache = null;
                     this.isPreloadingNextPool = false;
-                    
+                }
+                if (result) {
                     if (result.isEmpty) {
                         return { isEmpty: true };
                     }
-                    
                     this.setPool(result.videos);
                     this.setCurrentIndex(0);
                     return { isEmpty: false, poolSize: result.videos.length };
-                } catch (error) {
-                    console.error('❌ Ошибка использования предзагруженного пула:', error);
                 }
             }
             
@@ -293,8 +295,10 @@ export default class SessionPoolManager {
             })
             .catch(error => {
                 console.error('❌ Ошибка предзагрузки:', error);
-                this.isPreloadingNextPool = false;
                 throw error;
+            })
+            .finally(() => {
+                this.isPreloadingNextPool = false;
             });
     }
 
