@@ -7,12 +7,14 @@ import VideoController from "./controllers/VideoController.js";
 import GestureController from "./controllers/GestureController.js";
 import UIController from "./controllers/UIController.js";
 import DebugLogger from "./utils/DebugLogger.js";
+import SessionPoolManager from "./managers/SessionPoolManager.js";
+import AllWatchedScreen from "./components/AllWatchedScreen.js";
 
 document.addEventListener('DOMContentLoaded', async () => {
 
   window.debugLogger = new DebugLogger();
   
-  console.log('🚀 DoramaShorts v9.1 - Версия с исправленным звуком');
+  console.log('🚀 DoramaShorts v10.0 - Версия с системой пулов');
   
   // ===============================
   // АВТОРИЗАЦИЯ
@@ -96,6 +98,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupDebugAccess();
   
   // ===============================
+  // ИНИЦИАЛИЗАЦИЯ SessionPoolManager
+  // ===============================
+  
+  const sessionPoolManager = new SessionPoolManager(window.telegramAuth);
+  
+  // ===============================
   // ИНИЦИАЛИЗАЦИЯ КОНТРОЛЛЕРОВ
   // ===============================
   
@@ -105,7 +113,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   const gestureController = new GestureController(videoController, uiController);
   const videoPreloader = new VideoPreloader(videoPlayerManager);
 
-  const videoManager = new VideoManager(videoPlayerManager, videoPreloader, window.telegramAuth);
+  // Передаем sessionPoolManager в VideoManager
+  const videoManager = new VideoManager(
+    videoPlayerManager, 
+    videoPreloader, 
+    window.telegramAuth,
+    sessionPoolManager  // ✅ НОВОЕ
+  );
   videoManager.initializeFromUserData(userData);
 
   // ✅ Создаём FavoritesManager
@@ -117,7 +131,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ✅ Устанавливаем DOM элементы
   favoritesManager.setDOMElements(favoritesList, favoritesEmpty);
 
-  // ✅ НОВЫЙ: Колбэк для синхронизации состояния избранного
+  // Колбэк для синхронизации состояния избранного
   favoritesManager.setFavoritesChangedCallback((updatedFavorites) => {
     console.log('🔄 Синхронизация избранного:', updatedFavorites.length, 'видео');
     userFavorites = updatedFavorites;
@@ -132,7 +146,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       updateButtonStates(videoId);
   });
 
-  const watchTracker = new WatchTracker(window.telegramAuth, videoPlayerManager);
+  // Передаем sessionPoolManager в WatchTracker
+  const watchTracker = new WatchTracker(
+    window.telegramAuth, 
+    videoPlayerManager,
+    sessionPoolManager
+  );
   watchTracker.initializeFromUserData(userData);
 
   favoritesManager.setLoadVideoCallback(async () => {
@@ -147,10 +166,33 @@ document.addEventListener('DOMContentLoaded', async () => {
       );
   });
 
+  // Создаем экран "Все просмотрено"
+  const allWatchedScreen = new AllWatchedScreen(sessionPoolManager, async () => {
+    console.log('🔄 Перезапуск приложения...');
+    allWatchedScreen.hide();
+    
+    // Инициализируем новый пул
+    const result = await videoManager.initializePoolMode();
+    
+    if (result.success && !result.isEmpty) {
+      // Загружаем первое видео
+      await videoManager.loadVideo(
+        videoController,
+        updateButtonStates,
+        watchTracker,
+        videoTitle,
+        videoGenre,
+        currentTab,
+        hasFirstClickOccurred
+      );
+    }
+  });
+
   window.videoPreloader = videoPreloader;
   window.videoPlayerManager = videoPlayerManager;
   window.videoManager = videoManager;
   window.watchTracker = watchTracker;
+  window.sessionPoolManager = sessionPoolManager;
 
   console.log("✅ VideoManager инициализирован");
 
@@ -206,7 +248,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           
           const activePlayer = videoPlayerManager.getActivePlayer();
           if (activePlayer && videoController.currentTab === 'main') {
-              // ✅ ВКЛЮЧАЕМ ЗВУК ПЕРЕД ЗАПУСКОМ
               activePlayer.muted = false;
               activePlayer.volume = 1.0;
               
@@ -219,7 +260,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                   activePlayer.play().then(() => {
                       console.log('✅ Видео запущено со звуком');
                       
-                      // ✅ Проверяем, что звук действительно включен
                       setTimeout(() => {
                           if (activePlayer.muted) {
                               console.warn('⚠️ Звук был выключен после запуска, включаем принудительно');
@@ -273,7 +313,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     favorites: userFavorites.length,
     likes: userLikes.length,
     dislikes: userDislikes.length,
-    watched: watchTracker.getWatchedCount()
+    mode: 'POOL'
   });
 
   // ===============================
@@ -300,7 +340,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (activePlayer) {
         if (activePlayer.src) {
           if (hasFirstClickOccurred) {
-            // ✅ Проверяем звук при возврате на главную
             if (activePlayer.muted) {
               console.warn('⚠️ Звук был выключен, включаем');
               activePlayer.muted = false;
@@ -379,9 +418,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ===============================
 
   async function updateFavoritesList() {
-    // ✅ FavoritesManager управляет состоянием и уведомляет через колбэк
     await favoritesManager.updateFavoritesList();
-    // ✅ userFavorites уже обновлён через onFavoritesChanged колбэк
   }
 
   // ===============================
@@ -410,10 +447,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // ===============================
-  // ИСПРАВЛЕННАЯ ФУНКЦИЯ loadVideo()
-  // ===============================
-
   window.videos = videos;
   window.videoOrder = videoOrder;
   window.currentOrderIndex = currentOrderIndex;
@@ -422,12 +455,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.startWatchTracking = (filename, currentTab) => {
       watchTracker.startWatchTracking(filename, currentTab);
   };
-  window.updateLastVideoBatch = async () => {
-      await videoManager.updateLastVideoBatch();
-  };
-  window.shuffleUnwatchedVideos = async () => {
-    await videoManager.shuffleUnwatchedVideos();
-  };
+
+  // Вспомогательная функция для показа экрана "Все просмотрено"
+  function showAllWatchedScreen() {
+    const videoContainer = document.getElementById('videoContainer');
+    if (videoContainer) {
+      allWatchedScreen.show(videoContainer);
+    }
+  }
 
   // ===============================
   // ЗАГРУЗКА ВИДЕО С СЕРВЕРА
@@ -472,28 +507,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function showDescription() {
-    const videosList = window.videoManager ? window.videoManager.getVideos() : videos;
-    const order = window.videoManager ? window.videoManager.getVideoOrder() : videoOrder;
-    const currentIdx = window.videoManager ? window.videoManager.getCurrentOrderIndex() : currentOrderIndex;
-    if (videosList.length === 0) {
+    // Получаем видео из пула
+    const videoData = videoManager.getCurrentVideo();
+    
+    if (!videoData) {
         console.warn('⚠️ Нет видео для отображения описания');
         return;
     }
     
-    const idx = order[currentIdx];
-    const videoData = videosList[idx];
+    const title = videoData.title || 'Без названия';
+    const description = videoData.description || 'Описание отсутствует';
+    const series = videoData.series || 'Неизвестно';
+    const seasons = videoData.seasons || 'Неизвестно';
+    const status = videoData.status || 'Неизвестно';
+    const country = videoData.country || 'Неизвестно';
+    const genre = videoData.genre || 'Неизвестно';
+    const year = videoData.year || 'Неизвестно';
     
-    if (videoData) {
-      const title = videoData.title || 'Без названия';
-      const description = videoData.description || 'Описание отсутствует';
-      const series = videoData.series || 'Неизвестно';
-      const seasons = videoData.seasons || 'Неизвестно';
-      const status = videoData.status || 'Неизвестно';
-      const country = videoData.country || 'Неизвестно';
-      const genre = videoData.genre || 'Неизвестно';
-      const year = videoData.year || 'Неизвестно';
-      
-      const fullDescription = `${description}
+    const fullDescription = `${description}
 
 Год выпуска: ${year}
 Серии: ${series}
@@ -501,18 +532,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 Статус: ${status}
 Страна: ${country}
 Жанр: ${genre}`;
-      
-      if (modalTitle) {
-        modalTitle.textContent = title;
-      }
-      
-      if (modalDescription) {
-        modalDescription.textContent = fullDescription;
-      }
-      
-      if (descriptionModal) {
-        descriptionModal.classList.add('show');
-      }
+    
+    if (modalTitle) {
+      modalTitle.textContent = title;
+    }
+    
+    if (modalDescription) {
+      modalDescription.textContent = fullDescription;
+    }
+    
+    if (descriptionModal) {
+      descriptionModal.classList.add('show');
     }
   }
 
@@ -719,7 +749,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   const activePlayer = videoPlayerManager.getActivePlayer();
   if (activePlayer) {
-    // ✅ ВАЖНО: Убеждаемся, что звук включен
     activePlayer.muted = false;
     activePlayer.volume = 1.0;
     
@@ -731,39 +760,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     activePlayer.addEventListener('playing', async () => {
       console.log('🎬 Видео воспроизводится');
       
-      // ✅ Проверяем звук при каждом запуске
       if (activePlayer.muted) {
         console.warn('⚠️ Звук был выключен при playing, включаем');
         activePlayer.muted = false;
       }
       
       setTimeout(async () => {
-        await videoPreloader.preloadNextVideo(currentOrderIndex, videoOrder, videos);
+        // Предзагрузка из пула
+        if (videoManager.usePoolMode) {
+          await videoManager.preloadNextFromPool();
+        }
       }, 1000);
     });
     
-    // ✅ Добавляем обработчик для отслеживания проблем со звуком
     activePlayer.addEventListener('volumechange', () => {
       console.log(`🔊 Громкость изменена: volume=${activePlayer.volume}, muted=${activePlayer.muted}`);
     });
     
-    // ✅ Обработчик паузы
     activePlayer.addEventListener('pause', () => {
       console.log('⏸️ Видео на паузе');
     });
     
-    // ✅ Обработчик ошибок
     activePlayer.addEventListener('error', (e) => {
       console.error('❌ Ошибка видео:', e);
     });
   }
 
   // ===============================
-  // ГЛОБАЛЬНЫЕ ФУНКЦИИ
+  // ГЛОБАЛЬНЫЕ ФУНКЦИИ (МОДИФИЦИРОВАНО)
   // ===============================
   
   window.nextVideo = async () => {
-      await videoManager.nextVideo(
+      const result = await videoManager.nextVideo(
           videoController,
           updateButtonStates,
           watchTracker,
@@ -772,7 +800,13 @@ document.addEventListener('DOMContentLoaded', async () => {
           currentTab,
           hasFirstClickOccurred
       );
+      
+      // Проверяем, закончились ли видео
+      if (result && result.isEmpty) {
+          showAllWatchedScreen();
+      }
   };
+  
   window.loadVideo = async () => {
       await videoManager.loadVideo(
           videoController,
@@ -786,27 +820,58 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   // ===============================
-  // ЗАПУСК ПРИЛОЖЕНИЯ
+  // ЗАПУСК ПРИЛОЖЕНИЯ (РЕЖИМ ПУЛОВ)
   // ===============================
 
-    await videoManager.fetchVideos(
-        updateFavoritesList,
-        videoController,
-        updateButtonStates,
-        watchTracker,
-        videoTitle,
-        videoGenre,
-        currentTab,
-        hasFirstClickOccurred
-    );
+  console.log('🚀 Запуск в режиме пулов...');
 
-  console.log('🎥 Ожидаем первый клик');
+  try {
+    // Инициализируем первый пул
+    const poolResult = await videoManager.initializePoolMode();
+    
+    if (!poolResult.success) {
+      console.error('❌ Ошибка инициализации пула:', poolResult.error);
+      alert('Ошибка загрузки видео. Попробуйте перезагрузить страницу.');
+      return;
+    }
+    
+    if (poolResult.isEmpty) {
+      console.log('📭 Все видео уже просмотрены');
+      showAllWatchedScreen();
+      document.getElementById('videoContainer').style.display = 'flex';
+      return;
+    }
+    
+    console.log(`✅ Пул загружен: ${poolResult.poolSize} видео`);
+    
+    // Загружаем первое видео
+    await videoManager.loadVideo(
+      videoController,
+      updateButtonStates,
+      watchTracker,
+      videoTitle,
+      videoGenre,
+      currentTab,
+      hasFirstClickOccurred
+    );
+    
+    // Обновляем список избранного
+    updateFavoritesList();
+    
+    // Показываем контейнер видео
+    document.getElementById('videoContainer').style.display = 'flex';
+    
+    console.log('🎥 Ожидаем первый клик');
+    
+  } catch (error) {
+    console.error('❌ Критическая ошибка при запуске:', error);
+    alert('Ошибка загрузки приложения. Попробуйте перезагрузить страницу.');
+  }
 
   // ===============================
   // ДИАГНОСТИКА ЗВУКА
   // ===============================
 
-  // Проверяем состояние звука каждые 2 секунды
   setInterval(() => {
     const active = videoPlayerManager.getActivePlayer();
     const inactive = videoPlayerManager.getInactivePlayer();
@@ -819,7 +884,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
     
-    // Неактивное видео должно быть без звука
     if (inactive && !inactive.paused) {
       if (!inactive.muted) {
         console.warn('⚠️ ПРОБЛЕМА: Неактивное видео со звуком! Исправляем...');
@@ -837,7 +901,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         userLikes = freshUserData.likes || [];
         userDislikes = freshUserData.dislikes || [];
         favoritesManager.setUserFavorites(freshUserData.favorites || []);
-        watchTracker.updateWatchedVideos(freshUserData.watchedVideos || []);
         
         const currentVideoId = likeButton?.getAttribute('data-video-id');
         if (currentVideoId) {
@@ -864,72 +927,67 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     if (sessionOrderUpdateTimer) {
       clearTimeout(sessionOrderUpdateTimer);
-      window.telegramAuth.saveSessionOrder(currentSessionOrder);
     }
 
     watchTracker.cleanup();
   });
-// ===============================
-// МОНИТОРИНГ КОНФЛИКТОВ
-// ===============================
 
-setInterval(() => {
-  const current = document.getElementById('currentVideo');
-  const next = document.getElementById('nextVideo');
-  const active = videoPlayerManager.getActivePlayer();
-  const inactive = videoPlayerManager.getInactivePlayer();
-  
-  // Проверка 1: Оба плеера играют одновременно
-  if (!current.paused && !next.paused) {
-    console.error('🚨 КОНФЛИКТ: Оба плеера играют!');
-    inactive.pause();
-    inactive.muted = true;
-    inactive.volume = 0;
-  }
-  
-  // Проверка 2: Неактивный плеер со звуком
-  if (!inactive.paused && (!inactive.muted || inactive.volume > 0)) {
-    console.error('🚨 КОНФЛИКТ: Неактивный плеер со звуком!');
-    inactive.pause();
-    inactive.muted = true;
-    inactive.volume = 0;
-  }
-  
-  // Проверка 3: Активный плеер без звука
-  if (!active.paused && (active.muted || active.volume === 0)) {
-    console.error('🚨 ПРОБЛЕМА: Активный плеер без звука!');
-    active.muted = false;
-    active.volume = 1.0;
-  }
-  
-  // Проверка 4: Заедание (currentTime не меняется)
-  if (window.lastCheckTime !== undefined) {
-    if (!active.paused && active.currentTime === window.lastCurrentTime) {
-      console.error('🚨 ЗАЕДАНИЕ: currentTime не меняется!');
-      console.log('Состояние:', {
-        paused: active.paused,
-        currentTime: active.currentTime,
-        readyState: active.readyState,
-        buffered: active.buffered.length > 0 ? active.buffered.end(0) : 0,
-        networkState: active.networkState
-      });
-      
-      // Попытка исправить
-      if (active.readyState >= 2) {
-        active.play().catch(e => console.error('Ошибка перезапуска:', e));
+  // ===============================
+  // МОНИТОРИНГ КОНФЛИКТОВ
+  // ===============================
+
+  setInterval(() => {
+    const current = document.getElementById('currentVideo');
+    const next = document.getElementById('nextVideo');
+    const active = videoPlayerManager.getActivePlayer();
+    const inactive = videoPlayerManager.getInactivePlayer();
+    
+    if (!current.paused && !next.paused) {
+      console.error('🚨 КОНФЛИКТ: Оба плеера играют!');
+      inactive.pause();
+      inactive.muted = true;
+      inactive.volume = 0;
+    }
+    
+    if (!inactive.paused && (!inactive.muted || inactive.volume > 0)) {
+      console.error('🚨 КОНФЛИКТ: Неактивный плеер со звуком!');
+      inactive.pause();
+      inactive.muted = true;
+      inactive.volume = 0;
+    }
+    
+    if (!active.paused && (active.muted || active.volume === 0)) {
+      console.error('🚨 ПРОБЛЕМА: Активный плеер без звука!');
+      active.muted = false;
+      active.volume = 1.0;
+    }
+    
+    if (window.lastCheckTime !== undefined) {
+      if (!active.paused && active.currentTime === window.lastCurrentTime) {
+        console.error('🚨 ЗАЕДАНИЕ: currentTime не меняется!');
+        console.log('Состояние:', {
+          paused: active.paused,
+          currentTime: active.currentTime,
+          readyState: active.readyState,
+          buffered: active.buffered.length > 0 ? active.buffered.end(0) : 0,
+          networkState: active.networkState
+        });
+        
+        if (active.readyState >= 2) {
+          active.play().catch(e => console.error('Ошибка перезапуска:', e));
+        }
       }
     }
-  }
-  
-  window.lastCurrentTime = active.currentTime;
-  window.lastCheckTime = Date.now();
-  
-}, 2000);
+    
+    window.lastCurrentTime = active.currentTime;
+    window.lastCheckTime = Date.now();
+    
+  }, 2000);
 
-    window.addEventListener("beforeunload", () => {
-        videoManager.cleanup();
-        watchTracker.cleanup();
-    });
+  window.addEventListener("beforeunload", () => {
+      videoManager.cleanup();
+      watchTracker.cleanup();
+  });
 
-  console.log('🎉 DoramaShorts v9.1 с исправленным звуком полностью инициализирован!');
+  console.log('🎉 DoramaShorts v10.0 с системой пулов полностью инициализирован!');
 });
