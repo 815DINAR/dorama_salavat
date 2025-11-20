@@ -273,6 +273,7 @@ export default class VideoManager {
                     console.warn('⚠️ Нет видео в пуле');
                     this.isLoadingVideo = false;
                     videoController.setLoadingState(false);
+                    videoController.showError("Нет видео для просмотра");
                     return;
                 }
             } else {
@@ -573,6 +574,11 @@ export default class VideoManager {
     }
 
     saveSessionOrderBatch() {
+        if (this.usePoolMode) {
+            console.log('⏭️ saveSessionOrderBatch пропущен в pool mode');
+            return;
+        }
+
         if (this.sessionOrderUpdateTimer) {
             clearTimeout(this.sessionOrderUpdateTimer);
         }
@@ -614,12 +620,18 @@ export default class VideoManager {
     // ===============================
 
     cleanup() {
+        console.log('🧹 Cleanup VideoManager...');
+    
         if (this.lastVideoUpdateTimer) {
             clearTimeout(this.lastVideoUpdateTimer);
+            this.lastVideoUpdateTimer = null;
         }
-
+    
         if (this.sessionOrderUpdateTimer) {
             clearTimeout(this.sessionOrderUpdateTimer);
+            this.sessionOrderUpdateTimer = null;
         }
+        
+        console.log('✅ VideoManager cleanup завершен');
     }
 }

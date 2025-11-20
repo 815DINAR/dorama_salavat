@@ -985,8 +985,39 @@ document.addEventListener('DOMContentLoaded', async () => {
   }, 2000);
 
   window.addEventListener("beforeunload", () => {
-      videoManager.cleanup();
-      watchTracker.cleanup();
+    console.log('🧹 Cleanup перед закрытием страницы...');
+    
+    // ✅ Сохраняем последнее видео (актуально в обоих режимах)
+    if (lastVideoUpdateTimer) {
+        clearTimeout(lastVideoUpdateTimer);
+        const currentVideoId = likeButton?.getAttribute('data-video-id');
+        if (currentVideoId) {
+            window.telegramAuth.updateLastVideo(currentVideoId);
+            console.log('💾 Последнее видео сохранено:', currentVideoId);
+        }
+    }
+    
+    // ✅ Session Order - только для legacy режима
+    if (sessionOrderUpdateTimer) {
+        clearTimeout(sessionOrderUpdateTimer);
+        
+        // В режиме пулов sessionOrder не используется, т.к.:
+        // - Пул хранится в sessionStorage (очищается автоматически)
+        // - Backend управляет историей через user_watch_history
+        // - При новой сессии запрашивается новый пул
+        if (!videoManager.usePoolMode) {
+            window.telegramAuth.saveSessionOrder(currentSessionOrder);
+            console.log('💾 Session order сохранен (legacy режим)');
+        } else {
+            console.log('⏭️ Session order пропущен (pool режим - используется sessionStorage)');
+        }
+    }
+
+    // ✅ Очистка менеджеров
+    videoManager.cleanup();
+    watchTracker.cleanup();
+    
+    console.log('✅ Cleanup завершен');
   });
 
   console.log('🎉 DoramaShorts v10.0 с системой пулов полностью инициализирован!');

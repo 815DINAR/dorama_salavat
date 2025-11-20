@@ -217,22 +217,26 @@ export default class SessionPoolManager {
             // Проверяем предзагруженный пул
             if (this.nextPoolCache) {
                 console.log('⚡ Используем предзагруженный пул');
-                let result;
                 try {
-                    result = await this.nextPoolCache;
-                } catch (error) {
-                    console.error('❌ Ошибка использования предзагруженного пула:', error);
-                } finally {
+                    const result = await this.nextPoolCache;
+                    
+                    // Не сбрасываем флаг здесь - это делает сам промис
+                    
+                    // ✅ Очищаем кеш после использования
                     this.nextPoolCache = null;
-                    this.isPreloadingNextPool = false;
-                }
-                if (result) {
+                    
                     if (result.isEmpty) {
                         return { isEmpty: true };
                     }
+                    
                     this.setPool(result.videos);
                     this.setCurrentIndex(0);
                     return { isEmpty: false, poolSize: result.videos.length };
+                } catch (error) {
+                    console.error('❌ Ошибка использования предзагруженного пула:', error);
+                    // ✅ При ошибке очищаем кеш и флаг
+                    this.nextPoolCache = null;
+                    this.isPreloadingNextPool = false;
                 }
             }
             
@@ -294,6 +298,8 @@ export default class SessionPoolManager {
             return;
         }
 
+        console.log('🚀 Запуск предзагрузки следующего пула...');
+
         this.isPreloadingNextPool = true;
         
         const userId = this.telegramAuth.getUserId();
@@ -301,6 +307,7 @@ export default class SessionPoolManager {
         this.nextPoolCache = this.fetchPoolFromAPI(userId, this.POOL_SIZE)
             .then(({ videos, remainingCount }) => {
                 console.log('✅ Следующий пул предзагружен');
+                this.isPreloadingNextPool = false;
                 return {
                     isEmpty: videos.length === 0,
                     videos,
@@ -308,8 +315,19 @@ export default class SessionPoolManager {
                 };
             })
             .catch(error => {
-                console.error('❌ Ошибка предзагрузки:', error);
-                throw error;
+                console.error('❌ Ошибка предзагрузки следующего пула:', error);
+            
+                // ✅ Сбрасываем флаг и кеш при ошибке
+                this.isPreloadingNextPool = false;
+                this.nextPoolCache = null;
+                
+                // ✅ ВАЖНО: Не пробрасываем ошибку дальше, чтобы не сломать moveToNext
+                // Вместо этого возвращаем пустой результат
+                return {
+                    isEmpty: false,
+                    videos: [],
+                    remainingCount: 0
+                };
             })
             .finally(() => {
                 this.isPreloadingNextPool = false;
@@ -351,6 +369,33 @@ export default class SessionPoolManager {
         sessionStorage.removeItem('currentPool');
         sessionStorage.removeItem('currentIndex');
         console.log('🗑️ Пул очищен');
+    }
+
+    cancelPreload() {
+        if (this.isPreloadingNextPool) {
+            console.log('🚫 Отмена предзагрузки...');
+            this.nextPoolCache = null;
+            this.isPreloadingNextPool = false;
+        }
+    }
+
+    cleanup() {
+        console.log('🧹 Cleanup SessionPoolManager...');
+
+        // Отменяем предзагрузку, если идёт
+        this.cancelPreload();
+        
+        // Отменяем предзагрузку, если идёт
+        if (this.isPreloadingNextPool) {
+            this.isPreloadingNextPool = false;
+            this.nextPoolCache = null;
+            console.log('🚫 Предзагрузка отменена');
+        }
+        
+        // sessionStorage НЕ очищаем - он живет до закрытия вкладки
+        // Это позволяет восстановить состояние при случайной перезагрузке
+        
+        console.log('✅ SessionPoolManager cleanup завершен');
     }
 
     async resetHistory() {
