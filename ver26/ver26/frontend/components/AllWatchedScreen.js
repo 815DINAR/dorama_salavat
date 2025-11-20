@@ -3,11 +3,19 @@ export default class AllWatchedScreen {
         this.sessionPoolManager = sessionPoolManager;
         this.onRestart = onRestart;
         this.container = null;
+        this.restartButton = null; // Сохраняем ссылку на кнопку
+        this.handleRestartBound = null; // Сохраняем bound функцию
         
         console.log('✅ AllWatchedScreen инициализирован');
     }
 
     create() {
+        // Предотвращаем создание дубликатов
+        if (this.container) {
+            console.warn('⚠️ Контейнер уже создан');
+            return this.container;
+        }
+
         this.container = document.createElement('div');
         this.container.className = 'all-watched-screen';
         this.container.innerHTML = `
@@ -22,9 +30,13 @@ export default class AllWatchedScreen {
         // Добавляем стили
         this.addStyles();
 
-        // Добавляем обработчик
-        const restartButton = this.container.querySelector('#restartButton');
-        restartButton.addEventListener('click', () => this.handleRestart());
+        // Сохраняем ссылки и используем bound метод
+        this.restartButton = this.container.querySelector('#restartButton');
+        this.handleRestartBound = this.handleRestart.bind(this);
+        
+        if (this.restartButton) {
+            this.restartButton.addEventListener('click', this.handleRestartBound);
+        }
 
         return this.container;
     }
@@ -184,7 +196,7 @@ export default class AllWatchedScreen {
             this.container = this.create();
         }
 
-        if (parentElement) {
+        if (parentElement && !this.container.parentElement) {
             parentElement.appendChild(this.container);
             console.log('✅ Экран "Все просмотрено" показан');
         }
@@ -197,8 +209,32 @@ export default class AllWatchedScreen {
         }
     }
 
+    // Добавлена правильная очистка
     destroy() {
+        console.log('🧹 Очистка AllWatchedScreen...');
+        
+        // Удаляем event listener
+        if (this.restartButton && this.handleRestartBound) {
+            this.restartButton.removeEventListener('click', this.handleRestartBound);
+            console.log('✅ Event listener удален');
+        }
+        
+        // Удаляем из DOM
         this.hide();
+        
+        // Очищаем ссылки
+        this.restartButton = null;
+        this.handleRestartBound = null;
         this.container = null;
+        
+        console.log('✅ AllWatchedScreen очищен');
+    }
+
+    // Метод для повторного использования без пересоздания
+    reset() {
+        if (!this.container) {
+            console.warn('⚠️ Контейнер не создан, создаём новый');
+            this.create();
+        }
     }
 }

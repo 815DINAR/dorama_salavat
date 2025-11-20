@@ -426,7 +426,7 @@ export default class VideoManager {
     }
 
     // ===============================
-    // СЛЕДУЮЩЕЕ ВИДЕО (МОДИФИЦИРОВАНО)
+    // СЛЕДУЮЩЕЕ ВИДЕО
     // ===============================
 
     async nextVideo(
@@ -483,6 +483,8 @@ export default class VideoManager {
             currentTab,
             hasFirstClickOccurred
         );
+
+        return result;
     }
 
     // ===============================

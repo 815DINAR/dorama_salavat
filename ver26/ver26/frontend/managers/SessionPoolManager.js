@@ -15,7 +15,21 @@ export default class SessionPoolManager {
 
     getPool() {
         const poolStr = sessionStorage.getItem('currentPool');
-        return poolStr ? JSON.parse(poolStr) : [];
+        if (!poolStr) {
+            return [];
+        }
+        try {
+            const parsed = JSON.parse(poolStr);
+            if (Array.isArray(parsed)) {
+                return parsed;
+            } else {
+                console.warn('⚠️ Parsed pool is not an array. Returning empty array.');
+                return [];
+            }
+        } catch (error) {
+            console.warn('⚠️ Failed to parse currentPool from sessionStorage. Returning empty array.', error);
+            return [];
+        }
     }
 
     setPool(pool) {
