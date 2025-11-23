@@ -51,19 +51,27 @@ export default class SessionPoolManager {
 
     async fetchPoolFromAPI(userId, poolSize = 50) {
         try {
-            const response = await fetch('/api/generate-pool', {
+            console.log(`✅ Готовимся загрузить пул`);
+            const response = await fetch('api/generate-pool.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ userId, poolSize })
+                body: JSON.stringify({ userId: userId, poolSize: poolSize })
             });
 
+            console.log(`✅ Получен ответ на метод генерации пула: ${response}`);
+
             if (!response.ok) {
+                console.log(`❌ Не ок ответ на запрос генерации пула`);
+                const errorText = await response.text();
+                console.error('❌ Текст ошибки:', errorText);
                 throw new Error(`HTTP error: ${response.status}`);
             }
 
+            console.log(`✅ Готовимся парсить ответ на запрос генерации пула`);
             const data = await response.json();
+            console.log(`✅ Ответ на запрос генерации пула распаршен: ${data}`);
             
             if (!data.success) {
                 throw new Error(data.error || 'Failed to generate pool');
@@ -87,14 +95,14 @@ export default class SessionPoolManager {
 
         for (let attempt = 0; attempt < maxRetries; attempt++) {
             try {
-                const response = await fetch('/api/mark-watched', {
+                const response = await fetch('api/mark-watched.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        userId,
-                        videoId,
+                        userId: userId,
+                        videoId: videoId,
                         watchedAt: new Date().toISOString()
                     })
                 });
@@ -128,12 +136,12 @@ export default class SessionPoolManager {
 
     async resetHistoryAPI(userId) {
         try {
-            const response = await fetch('/api/reset-history', {
+            const response = await fetch('api/reset-history', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ userId })
+                body: JSON.stringify({ userId: userId })
             });
 
             if (!response.ok) {
@@ -342,6 +350,7 @@ export default class SessionPoolManager {
         }
 
         // Асинхронно отправляем на сервер (не блокируем UI)
+        console.info('trying to mark watched video with id:', videoId, 'for user with idz:', userId);
         this.markAsWatchedAPI(videoId, userId).catch(error => {
             console.error('❌ Ошибка отправки просмотра:', error);
         });
