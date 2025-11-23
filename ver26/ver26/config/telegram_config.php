@@ -4,7 +4,7 @@
  */
 
 // Токен вашего Telegram бота (получите у @BotFather)
-define('TELEGRAM_BOT_TOKEN', 'YOUR_BOT_TOKEN_HERE');
+define('TELEGRAM_BOT_TOKEN', '8351284705:AAFRUUDH5-cPHJ6QvubCLWuFjsP22Uh_-GE');
 
 // URL Telegram Bot API
 define('TELEGRAM_API_URL', 'https://api.telegram.org/bot' . TELEGRAM_BOT_TOKEN);
