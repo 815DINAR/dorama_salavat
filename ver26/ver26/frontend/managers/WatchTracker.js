@@ -1,142 +1,92 @@
 export default class WatchTracker {
-    constructor(telegramAuth, videoPlayerManager) {
+    constructor(telegramAuth, videoPlayerManager, sessionPoolManager = null) {
         this.telegramAuth = telegramAuth;
         this.videoPlayerManager = videoPlayerManager;
+        this.sessionPoolManager = sessionPoolManager; // optional, but WatchTracker won't call network
 
-        // Просмотренные видео
+        // Локальный набор просмотренных (legacy)
         this.watchedVideosSet = new Set();
 
-        // Таймер отслеживания
-        this.watchTimer = null;
-        this.watchedSeconds = 0;
+        // Состояние отслеживания
         this.currentTrackingFilename = null;
+        this.watchedSeconds = 0;
 
-        // Константы
-        this.WATCH_THRESHOLD = 5; // секунд для пометки как "просмотрено"
+        // В pool режиме WatchTracker НЕ выполняет сетевые вызовы — это ответственность VideoManager / SessionPoolManager
+        this.usePoolMode = !!sessionPoolManager;
 
-        console.log('✅ WatchTracker инициализирован');
+        console.log(`✅ WatchTracker инициализирован (режим: ${this.usePoolMode ? 'POOL' : 'LEGACY'})`);
     }
 
-    // ===============================
-    // ИНИЦИАЛИЗАЦИЯ
-    // ===============================
-
     initializeFromUserData(userData) {
-        if (userData) {
+        if (userData && !this.usePoolMode) {
             this.watchedVideosSet = new Set(userData.watchedVideos || []);
             console.log(`📊 Загружено просмотренных видео: ${this.watchedVideosSet.size}`);
         }
     }
 
-    // ===============================
-    // УПРАВЛЕНИЕ ТАЙМЕРОМ
-    // ===============================
-
     resetWatchTimer() {
-        if (this.watchTimer) {
-            clearInterval(this.watchTimer);
-            this.watchTimer = null;
-        }
+        // Упрощённо: WatchTracker больше не запускает таймеры для пометки просмотра
         this.watchedSeconds = 0;
         this.currentTrackingFilename = null;
     }
 
-    // ===============================
-    // ОТСЛЕЖИВАНИЕ ПРОСМОТРА
-    // ===============================
-
+    // startWatchTracking теперь только отслеживает UI/таймеры для аналитики,
+    // но НЕ отправляет отметку просмотра на сервер (это делает VideoManager через SessionPoolManager).
     startWatchTracking(filename, currentTab) {
-        this.resetWatchTimer();
-
-        // Если видео уже просмотрено, не отслеживаем повторно
-        if (this.watchedVideosSet.has(filename)) {
-            console.log('⏭️ Видео уже просмотрено, пропускаем отслеживание:', filename);
+        // Если legacy и уже помечено — можно пропустить
+        if (!this.usePoolMode && this.watchedVideosSet.has(filename)) {
+            console.log('⏭️ Видео уже помечено локально, пропускаем отслеживание:', filename);
             return;
         }
 
-        console.log('⏱️ Начинаем отслеживание:', filename);
-
         this.currentTrackingFilename = filename;
+        this.watchedSeconds = 0;
 
-        this.watchTimer = setInterval(() => {
-            const activePlayer = this.videoPlayerManager.getActivePlayer();
-
-            // Проверяем, что видео воспроизводится и мы на главной вкладке
-            if (activePlayer && !activePlayer.paused && currentTab === 'main') {
-                this.watchedSeconds++;
-
-                // Если достигли порога, помечаем как просмотренное
-                if (this.watchedSeconds >= this.WATCH_THRESHOLD) {
-                    this.markVideoAsWatched(this.currentTrackingFilename);
-                    this.resetWatchTimer();
-                }
-            }
-        }, 1000);
+        // Можно при желании всё ещё собирать watchedSeconds локально для аналитики,
+        // но тут мы не делаем сетевых вызовов.
+        console.log('⏱️ WatchTracker: начато отслеживание (без сетевых вызовов):', filename);
     }
 
-    // ===============================
-    // ПОМЕТКА КАК ПРОСМОТРЕННОЕ
-    // ===============================
-
+    // legacy helper: mark locally and optionally send to backend (kept for compatibility)
     async markVideoAsWatched(filename) {
-        console.log('✅ Просмотрено:', filename, `(${this.watchedSeconds} сек)`);
-
-        // Добавляем в локальный набор
         this.watchedVideosSet.add(filename);
-
-        // Отправляем на сервер
         try {
             await this.telegramAuth.addWatchedVideo(filename, this.watchedSeconds);
-            console.log('💾 Просмотр сохранен на сервере');
+            console.log('💾 Просмотр сохранен на сервере (legacy)');
         } catch (error) {
-            console.error('❌ Ошибка сохранения просмотра:', error);
+            console.error('❌ Ошибка сохранения просмотра (legacy):', error);
         }
     }
 
-    // ===============================
-    // ГЕТТЕРЫ
-    // ===============================
-
     isWatched(filename) {
+        if (this.usePoolMode) {
+            console.warn('⚠️ isWatched() не поддерживается в режиме пулов');
+            return false;
+        }
         return this.watchedVideosSet.has(filename);
     }
 
     getWatchedCount() {
+        if (this.usePoolMode) return 0;
         return this.watchedVideosSet.size;
     }
 
-    getWatchedVideos() {
-        return Array.from(this.watchedVideosSet);
-    }
-
-    getCurrentTrackingFilename() {
-        return this.currentTrackingFilename;
-    }
-
-    getWatchedSeconds() {
-        return this.watchedSeconds;
-    }
-
-    // ===============================
-    // ОБНОВЛЕНИЕ ДАННЫХ
-    // ===============================
-
     updateWatchedVideos(watchedVideos) {
-        if (Array.isArray(watchedVideos)) {
-            this.watchedVideosSet = new Set(watchedVideos);
-        }
+        if (this.usePoolMode) return;
+        if (Array.isArray(watchedVideos)) this.watchedVideosSet = new Set(watchedVideos);
     }
-
-    // ===============================
-    // ОЧИСТКА
-    // ===============================
 
     clearWatchedVideos() {
+        if (this.usePoolMode) {
+            console.warn('⚠️ clearWatchedVideos() не поддерживается в режиме пулов');
+            return;
+        }
         this.watchedVideosSet.clear();
-        console.log('🗑️ Просмотренные видео очищены');
+        console.log('🗑️ Просмотренные видео очищены (legacy)');
     }
 
     cleanup() {
+        // Nothing network-related to cleanup here
         this.resetWatchTimer();
         console.log('🧹 WatchTracker очищен');
     }
