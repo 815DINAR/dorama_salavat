@@ -1016,6 +1016,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ✅ Очистка менеджеров
     videoManager.cleanup();
     watchTracker.cleanup();
+    sessionPoolManager.cleanup();
+    if (allWatchedScreen && typeof allWatchedScreen.destroy === 'function') {
+      allWatchedScreen.destroy();
+    }
     
     console.log('✅ Cleanup завершен');
   });
