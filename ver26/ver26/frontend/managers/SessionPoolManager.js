@@ -424,9 +424,10 @@ export default class SessionPoolManager {
         }
 
         // Асинхронно отправляем на сервер (не блокируем UI)
-        this.markAsWatchedAPI(resolvedId, userId).catch(error => {
+        this.markAsWatchedAPI(resolvedId, userId).then(_ => { this.markedVideoIds.add(String(resolvedId)); })
+        .catch(error => {
             console.error('❌ Ошибка отправки просмотра:', error);
-        }).then(_ => { this.markedVideoIds.add(String(resolvedId)); });
+        });
 
         return true;
     }
