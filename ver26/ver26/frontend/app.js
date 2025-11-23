@@ -765,12 +765,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         activePlayer.muted = false;
       }
       
-      setTimeout(async () => {
-        // Предзагрузка из пула
-        if (videoManager.usePoolMode) {
-          await videoManager.preloadNextFromPool();
-        }
-      }, 1000);
+      if (videoManager.usePoolMode) {
+        videoManager.preloadNextFromPool().catch(e => {
+            console.warn('⚠️ Фоновая предзагрузка не удалась:', e);
+        });
+      }
     });
     
     activePlayer.addEventListener('volumechange', () => {
