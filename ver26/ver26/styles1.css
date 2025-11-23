@@ -88,6 +88,10 @@ body {
     overflow: hidden;
 }
 
+.debug-console:not(.show) {
+    display: none; /* ✅ Скрываем когда неактивна */
+}
+
 .debug-console.show {
     display: block;
     animation: slideIn 0.3s ease-out;
