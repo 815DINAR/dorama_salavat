@@ -6,6 +6,9 @@ export default class SessionPoolManager {
         this.POOL_SIZE = 50;
         this.PRELOAD_THRESHOLD = 0.8; // 80% пула
 
+        // Множество videoId, которые уже помечены в этой сессии (локально)
+        this.markedVideoIds = new Set();
+
         console.log('✅ SessionPoolManager инициализирован');
     }
 
@@ -83,6 +86,17 @@ export default class SessionPoolManager {
         // Not found in pool
         return null;
     }
+
+    /**
+     * Проверяет, было ли видео уже помечено в этой сессии.
+     * Принимает videoId (строка/число) или filename — в последнем случае попробует разрешить.
+     */
+        isMarked(videoIdentifier) {
+            if (!videoIdentifier) return false;
+            // Если передали filename, попробуем резолвить
+            const resolved = this.resolveVideoId(videoIdentifier) || String(videoIdentifier);
+            return this.markedVideoIds.has(String(resolved));
+        }
 
     // ===============================
     // API МЕТОДЫ
