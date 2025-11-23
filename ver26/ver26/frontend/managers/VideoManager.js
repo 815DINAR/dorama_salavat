@@ -353,18 +353,6 @@ export default class VideoManager {
                         activePlayer.load();
 
                         if (currentTab === 'main' && hasFirstClickOccurred) {
-                            // Помечаем просмотр СРАЗУ, когда начинаем playback attempt
-                            if (this.usePoolMode && this.sessionPoolManager) {
-                                try {
-                                    if (!this.sessionPoolManager.isMarked(canonicalId)) {
-                                        this.sessionPoolManager.markAsWatched(canonicalId).catch(e => {
-                                            console.warn('⚠️ Ошибка пометки просмотра (optimistic):', e);
-                                        });
-                                    }
-                                } catch (e) {
-                                    console.error('❌ Ошибка при попытке пометить видео перед play:', e);
-                                }
-                            }
 
                             activePlayer.play().then(() => {
                                 console.log('✅ Видео запущено со звуком');
