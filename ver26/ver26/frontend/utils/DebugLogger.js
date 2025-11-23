@@ -80,6 +80,14 @@ export default class DebugLogger {
                 this.clearLogs();
             });
         }
+
+        // ✅ ДОБАВЛЯЕМ КНОПКУ ЭКСПОРТА
+        const exportButton = document.getElementById('exportLogs');
+        if (exportButton) {
+            exportButton.addEventListener('click', () => {
+                this.sendLogsToTelegram();
+            });
+        }
     }
 
     toggleDebugConsole() {
@@ -127,5 +135,84 @@ export default class DebugLogger {
     clearLogs() {
         this.logs = [];
         this.updateDebugUI();
+    }
+
+    // ЭКСПОРТ ЛОГОВ
+    exportLogs() {
+        if (this.logs.length === 0) {
+            return 'No logs available';
+        }
+        
+        return this.logs.map(log => {
+            return `[${log.timestamp}] ${log.type.toUpperCase()}: ${log.message}`;
+        }).join('\n');
+    }
+
+    // ОТПРАВКА В TELEGRAM
+    async sendLogsToTelegram() {
+        try {
+            // Получаем userId из Telegram
+            const userId = window.telegramAuth?.getUserId();
+            
+            if (!userId) {
+                throw new Error('User ID not found');
+            }
+            
+            // Собираем логи
+            const logsText = this.exportLogs();
+            
+            if (logsText === 'No logs available') {
+                alert('⚠️ Нет логов для экспорта');
+                return;
+            }
+            
+            // Показываем индикатор загрузки
+            const exportBtn = document.getElementById('exportLogs');
+            if (exportBtn) {
+                exportBtn.disabled = true;
+                exportBtn.textContent = '⏳ Отправка...';
+            }
+            
+            // Получаем текущую дату и время
+            const now = new Date();
+            const timestamp = now.toISOString().replace('T', ' ').substring(0, 19);
+            
+            // Отправляем на сервер
+            const response = await fetch('api/send-logs-to-telegram.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: userId,
+                    logs: logsText,
+                    timestamp: timestamp
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (exportBtn) {
+                exportBtn.disabled = false;
+                exportBtn.textContent = '📥 Экспорт логов';
+            }
+            
+            if (result.success) {
+                alert('✅ Логи отправлены в Telegram!');
+                console.log('✅ Logs exported successfully:', result);
+            } else {
+                throw new Error(result.error || 'Unknown error');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error exporting logs:', error);
+            alert('❌ Ошибка отправки логов: ' + error.message);
+            
+            const exportBtn = document.getElementById('exportLogs');
+            if (exportBtn) {
+                exportBtn.disabled = false;
+                exportBtn.textContent = '📥 Экспорт логов';
+            }
+        }
     }
 }
