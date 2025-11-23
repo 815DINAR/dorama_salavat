@@ -3,14 +3,14 @@ export default class VideoManager {
         this.videoPlayerManager = videoPlayerManager;
         this.videoPreloader = videoPreloader;
         this.telegramAuth = telegramAuth;
-        this.sessionPoolManager = sessionPoolManager;
+        this.sessionPoolManager = sessionPoolManager; // ✅ НОВОЕ
 
         // Данные видео
         this.videos = [];
         this.videoOrder = [];
         this.currentOrderIndex = 0;
 
-        // Просмотренные видео
+        // Просмотренные видео (legacy)
         this.watchedVideosSet = new Set();
         this.currentSessionOrder = [];
 
@@ -31,7 +31,7 @@ export default class VideoManager {
         // Флаг загрузки
         this.isLoadingVideo = false;
 
-        // Режим работы
+        // ✅ Режим работы
         this.usePoolMode = !!sessionPoolManager;
 
         console.log(`✅ VideoManager инициализирован (режим: ${this.usePoolMode ? 'POOL' : 'LEGACY'})`);
@@ -80,12 +80,9 @@ export default class VideoManager {
     }
 
     getCurrentVideo() {
-        // Используем пул, если включен режим пулов
         if (this.usePoolMode && this.sessionPoolManager) {
             return this.sessionPoolManager.getCurrentVideo();
         }
-        
-        // Старая логика
         const idx = this.videoOrder[this.currentOrderIndex];
         return this.videos[idx];
     }
@@ -95,7 +92,7 @@ export default class VideoManager {
     }
 
     // ===============================
-    // РАБОТА С ПУЛАМИ
+    // POOL MODE: инициализация / навигация
     // ===============================
 
     async initializePoolMode() {
@@ -144,19 +141,15 @@ export default class VideoManager {
     }
 
     getPoolInfo() {
-        if (!this.usePoolMode || !this.sessionPoolManager) {
-            return null;
-        }
-
+        if (!this.usePoolMode || !this.sessionPoolManager) return null;
         return this.sessionPoolManager.getPoolInfo();
     }
 
     // ===============================
-    // ПЕРЕМЕШИВАНИЕ НЕПРОСМОТРЕННЫХ ВИДЕО (LEGACY)
+    // LEGACY: shuffle / restore
     // ===============================
 
     async shuffleUnwatchedVideos() {
-        // Старая логика остается без изменений
         const unwatchedIndices = [];
 
         this.videos.forEach((video, index) => {
@@ -167,8 +160,6 @@ export default class VideoManager {
                 }
             }
         });
-
-        console.log(`📊 Просмотрено: ${this.watchedVideosSet.size}, доступно: ${unwatchedIndices.length}`);
 
         if (unwatchedIndices.length < 3 && this.skippedVideosBuffer.length > 0) {
             const oldSkipped = this.skippedVideosBuffer.slice(0, Math.max(0, this.skippedVideosBuffer.length - this.MIN_VIDEOS_BEFORE_REPEAT));
@@ -208,10 +199,6 @@ export default class VideoManager {
         console.log('🔀 Видео перемешаны:', this.videoOrder.length);
     }
 
-    // ===============================
-    // ВОССТАНОВЛЕНИЕ ПОРЯДКА СЕССИИ (LEGACY)
-    // ===============================
-
     restoreSessionOrder() {
         const existingFilenames = new Set(this.videos.map(v => v.filename));
         const validOrder = this.currentSessionOrder.filter(filename => existingFilenames.has(filename));
@@ -242,7 +229,7 @@ export default class VideoManager {
     }
 
     // ===============================
-    // ЗАГРУЗКА ВИДЕО (МОДИФИЦИРОВАНО)
+    // ЗАГРУЗКА ВИДЕО (МОДИФИЦИРОВАНО) — теперь помечаем просмотр СРАЗУ
     // ===============================
 
     async loadVideo(
@@ -263,7 +250,6 @@ export default class VideoManager {
         videoController.setLoadingState(true);
 
         try {
-            // Получаем видео из пула или старым способом
             let videoData;
             
             if (this.usePoolMode && this.sessionPoolManager) {
@@ -273,11 +259,9 @@ export default class VideoManager {
                     console.warn('⚠️ Нет видео в пуле');
                     this.isLoadingVideo = false;
                     videoController.setLoadingState(false);
-                    videoController.showError("Нет видео для просмотра");
                     return;
                 }
             } else {
-                // Старая логика
                 if (this.videos.length === 0) {
                     console.warn('⚠️ Нет видео');
                     this.isLoadingVideo = false;
@@ -293,7 +277,7 @@ export default class VideoManager {
                 videoData = this.videos[idx];
             }
 
-            // Обновляем данные пользователя
+            // Обновляем данные пользователя (non-blocking for core flow)
             try {
                 const freshUserData = await this.telegramAuth.getUserData();
                 if (freshUserData) {
@@ -312,28 +296,43 @@ export default class VideoManager {
             console.log(`🎬 Загружаем видео: ${videoData.filename}`);
 
             if (videoData) {
-                const videoId = videoData.filename;
+                // prefer canonical id
+                const canonicalId = videoData.id ? String(videoData.id) : String(videoData.filename);
 
-                updateButtonStates(videoId);
+                updateButtonStates(canonicalId);
+                // WatchTracker теперь только отслеживает UI; пометка просмотра — здесь, в VideoManager
                 watchTracker.resetWatchTimer();
 
-                // ===== ПРОВЕРКА ПРЕДЗАГРУЗКИ =====
-
+                // ===== Если есть готовый next и переключение происходит мгновенно =====
                 const isNextVideoReady = this.videoPlayerManager.isNextReady();
                 const nextVideoData = this.videoPlayerManager.getNextVideoData();
 
-                if (isNextVideoReady && nextVideoData && nextVideoData.filename === videoId) {
+                if (isNextVideoReady && nextVideoData && nextVideoData.filename === videoData.filename) {
                     console.log('🚀 МГНОВЕННОЕ ПЕРЕКЛЮЧЕНИЕ');
 
                     await this.videoPlayerManager.switchToNextVideo();
 
+                    // После того, как видео стало активным — помечаем просмотр (fire-and-forget)
+                    if (this.usePoolMode && this.sessionPoolManager) {
+                        try {
+                            if (!this.sessionPoolManager.isMarked(canonicalId)) {
+                                this.sessionPoolManager.markAsWatched(canonicalId).catch(e => {
+                                    console.warn('⚠️ Ошибка пометки просмотра (optimistic):', e);
+                                });
+                            }
+                        } catch (e) {
+                            console.error('❌ Ошибка при попытке пометить видео после switchToNextVideo:', e);
+                        }
+                    }
+
                     if (currentTab === 'main' && hasFirstClickOccurred) {
-                        watchTracker.startWatchTracking(videoId, currentTab);
+                        // WatchTracker can still track UI state (no network)
+                        watchTracker.startWatchTracking(canonicalId, currentTab);
                     }
 
                 } else {
                     // Обычная загрузка
-                    console.log('📁 Обычная загрузка:', videoId);
+                    console.log('📁 Обычная загрузка:', videoData.filename);
 
                     const activePlayer = this.videoPlayerManager.getActivePlayer();
                     const newSrc = videoData.s3_url || videoData.url ||
@@ -352,6 +351,19 @@ export default class VideoManager {
                         activePlayer.load();
 
                         if (currentTab === 'main' && hasFirstClickOccurred) {
+                            // Помечаем просмотр СРАЗУ, когда начинаем playback attempt
+                            if (this.usePoolMode && this.sessionPoolManager) {
+                                try {
+                                    if (!this.sessionPoolManager.isMarked(canonicalId)) {
+                                        this.sessionPoolManager.markAsWatched(canonicalId).catch(e => {
+                                            console.warn('⚠️ Ошибка пометки просмотра (optimistic):', e);
+                                        });
+                                    }
+                                } catch (e) {
+                                    console.error('❌ Ошибка при попытке пометить видео перед play:', e);
+                                }
+                            }
+
                             activePlayer.play().then(() => {
                                 console.log('✅ Видео запущено со звуком');
 
@@ -360,14 +372,10 @@ export default class VideoManager {
                                         console.warn('⚠️ Звук был выключен после запуска, включаем');
                                         activePlayer.muted = false;
                                     }
-                                    console.log('🔊 Финальное состояние звука:', {
-                                        muted: activePlayer.muted,
-                                        volume: activePlayer.volume,
-                                        paused: activePlayer.paused
-                                    });
                                 }, 100);
 
-                                watchTracker.startWatchTracking(videoId, currentTab);
+                                // WatchTracker continues to handle UI tracking (no network)
+                                watchTracker.startWatchTracking(canonicalId, currentTab);
                             }).catch(error => {
                                 console.error('❌ Ошибка воспроизведения:', error);
                             });
@@ -376,28 +384,21 @@ export default class VideoManager {
                 }
 
                 // ===== ПРЕДЗАГРУЗКА СЛЕДУЮЩЕГО =====
-
                 setTimeout(async () => {
                     if (this.videoPreloader) {
                         if (this.usePoolMode && this.sessionPoolManager) {
-                            // ✅ НОВОЕ: Предзагружаем следующее видео из пула
                             await this.preloadNextFromPool();
                         } else {
-                            // Старая логика
                             await this.videoPreloader.preloadNextVideo(this.currentOrderIndex, this.videoOrder, this.videos);
                         }
                     }
                 }, 500);
 
                 // Обновление UI
-                if (videoTitle) {
-                    videoTitle.textContent = videoData.title || 'Без названия';
-                }
-                if (videoGenre) {
-                    videoGenre.textContent = `${videoData.genre || 'Неизвестно'}`;
-                }
+                if (videoTitle) videoTitle.textContent = videoData.title || 'Без названия';
+                if (videoGenre) videoGenre.textContent = `${videoData.genre || 'Неизвестно'}`;
 
-                this.updateLastVideoBatch(videoId);
+                this.updateLastVideoBatch(canonicalId);
             }
         } finally {
             this.isLoadingVideo = false;
@@ -405,11 +406,8 @@ export default class VideoManager {
         }
     }
 
-    // Предзагрузка следующего видео из пула
     async preloadNextFromPool() {
-        if (!this.usePoolMode || !this.sessionPoolManager) {
-            return;
-        }
+        if (!this.usePoolMode || !this.sessionPoolManager) return;
 
         const pool = this.sessionPoolManager.getPool();
         const currentIndex = this.sessionPoolManager.getCurrentIndex();
@@ -427,7 +425,7 @@ export default class VideoManager {
     }
 
     // ===============================
-    // СЛЕДУЮЩЕЕ ВИДЕО
+    // СЛЕДУЮЩЕЕ ВИДЕО (убрано двойное помечание)
     // ===============================
 
     async nextVideo(
@@ -442,29 +440,19 @@ export default class VideoManager {
         console.log('⏭️ Следующее видео');
 
         if (this.usePoolMode && this.sessionPoolManager) {
-            // Режим пулов
             const result = await this.moveToNextInPool();
             
             if (result.isEmpty) {
                 console.log('📭 Все видео просмотрены');
-                // TODO: Показать экран "Все просмотрено"
-                return;
+                return { isEmpty: true };
             }
 
             if (!result.success) {
                 console.error('❌ Ошибка перехода к следующему видео');
-                return;
+                return { success: false };
             }
 
         } else {
-            // Старая логика
-            if (this.videos.length > 0 && this.videoOrder.length > 0 && this.currentOrderIndex < this.videoOrder.length) {
-                const currentVideo = this.videos[this.videoOrder[this.currentOrderIndex]];
-                if (currentVideo && !this.watchedVideosSet.has(currentVideo.filename)) {
-                    this.addToSkippedBuffer(currentVideo.filename);
-                }
-            }
-
             const newIndex = this.currentOrderIndex + 1;
 
             if (newIndex >= this.videoOrder.length) {
@@ -485,79 +473,11 @@ export default class VideoManager {
             hasFirstClickOccurred
         );
 
-        return result;
+        return { isEmpty: false };
     }
 
     // ===============================
-    // ЗАГРУЗКА ВИДЕО С СЕРВЕРА (LEGACY)
-    // ===============================
-
-    async fetchVideos(
-        updateFavoritesList,
-        videoController,
-        updateButtonStates,
-        watchTracker,
-        videoTitle,
-        videoGenre,
-        currentTab,
-        hasFirstClickOccurred
-    ) {
-        console.log('📥 Загрузка видео...');
-        try {
-            const response = await fetch('get_videos.php');
-
-            if (!response.ok) {
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-
-            const rawText = await response.text();
-
-            try {
-                this.videos = JSON.parse(rawText);
-                window.videos = this.videos;
-                console.log('✅ Видео загружено:', this.videos.length);
-
-                if (this.videos.length > 0) {
-                    const existingFilenames = this.videos.map(v => v.filename);
-                    await this.telegramAuth.cleanDeletedVideos(existingFilenames);
-
-                    if (this.currentSessionOrder.length > 0) {
-                        this.restoreSessionOrder();
-                    } else {
-                        await this.shuffleUnwatchedVideos();
-                    }
-
-                    await this.loadVideo(
-                        videoController,
-                        updateButtonStates,
-                        watchTracker,
-                        videoTitle,
-                        videoGenre,
-                        currentTab,
-                        hasFirstClickOccurred
-                    );
-                    updateFavoritesList();
-
-                    // Предзагрузка первых видео
-                    setTimeout(async () => {
-                        if (this.videoPreloader) {
-                            await this.videoPreloader.preloadNextVideo(this.currentOrderIndex, this.videoOrder, this.videos);
-                        }
-                    }, 1000);
-
-                } else {
-                    console.warn('⚠️ Массив видео пустой');
-                }
-            } catch (parseError) {
-                console.error('❌ Ошибка парсинга JSON:', parseError);
-            }
-        } catch (error) {
-            console.error('❌ Ошибка загрузки видео:', error);
-        }
-    }
-
-    // ===============================
-    // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ (LEGACY)
+    // LEGACY: серверные fetch / прочее (без изменений)
     // ===============================
 
     addToSkippedBuffer(filename) {
@@ -598,17 +518,10 @@ export default class VideoManager {
         }, 10000);
     }
 
-    // ===============================
-    // УПРАВЛЕНИЕ ПРОСМОТРЕННЫМИ ВИДЕО (LEGACY)
-    // ===============================
-
     markAsWatched(filename) {
         this.watchedVideosSet.add(filename);
-
         const skipIndex = this.skippedVideosBuffer.indexOf(filename);
-        if (skipIndex !== -1) {
-            this.skippedVideosBuffer.splice(skipIndex, 1);
-        }
+        if (skipIndex !== -1) this.skippedVideosBuffer.splice(skipIndex, 1);
     }
 
     isWatched(filename) {
@@ -616,9 +529,8 @@ export default class VideoManager {
     }
 
     // ===============================
-    // ОЧИСТКА
+    // CLEANUP
     // ===============================
-
     cleanup() {
         console.log('🧹 Cleanup VideoManager...');
     

@@ -46,12 +46,52 @@ export default class SessionPoolManager {
     }
 
     // ===============================
+    // HELPERS
+    // ===============================
+
+    /**
+     * Try to resolve provided identifier (could be videoId or filename)
+     * to a canonical videoId (videos.id) using the current pool.
+     * Returns resolved id string or null if not found.
+     */
+    resolveVideoId(videoIdentifier) {
+        if (!videoIdentifier) return null;
+
+        const pool = this.getPool();
+
+        // 1) If identifier already equals an id in pool -> return it
+        const byId = pool.find(v => String(v.id) === String(videoIdentifier));
+        if (byId) {
+            return String(byId.id);
+        }
+
+        // 2) Try matching by filename
+        const byFilename = pool.find(v => String(v.filename) === String(videoIdentifier));
+        if (byFilename) {
+            return String(byFilename.id);
+        }
+
+        // 3) Try matching by filename without path / encoding (e.g. decoding)
+        try {
+            const decoded = decodeURIComponent(videoIdentifier);
+            const byDecoded = pool.find(v => String(v.filename) === String(decoded));
+            if (byDecoded) return String(byDecoded.id);
+        } catch (e) {
+            // ignore decode errors
+        }
+
+        // Not found in pool
+        return null;
+    }
+
+    // ===============================
     // API МЕТОДЫ
     // ===============================
 
     async fetchPoolFromAPI(userId, poolSize = 50) {
         try {
-            console.log(`✅ Готовимся загрузить пул`);
+            console.log(`🚀 Отправляем запрос на генерацию пула для userId: ${userId}, poolSize: ${poolSize}`);
+            
             const response = await fetch('api/generate-pool.php', {
                 method: 'POST',
                 headers: {
@@ -60,18 +100,24 @@ export default class SessionPoolManager {
                 body: JSON.stringify({ userId: userId, poolSize: poolSize })
             });
 
-            console.log(`✅ Получен ответ на метод генерации пула: ${response}`);
+            console.log(`📡 Получен ответ: статус ${response.status} ${response.statusText}`);
 
             if (!response.ok) {
-                console.log(`❌ Не ок ответ на запрос генерации пула`);
-                const errorText = await response.text();
-                console.error('❌ Текст ошибки:', errorText);
-                throw new Error(`HTTP error: ${response.status}`);
+                let errorDetails = '';
+                try {
+                    const errorText = await response.text();
+                    errorDetails = errorText;
+                    console.error('❌ Текст ответа:', errorText);
+                } catch (e) {
+                    errorDetails = 'Не удалось прочитать тело ответа';
+                }
+                
+                throw new Error(`HTTP ${response.status}: ${response.statusText}. Details: ${errorDetails}`);
             }
 
-            console.log(`✅ Готовимся парсить ответ на запрос генерации пула`);
+            console.log(`✅ Парсим JSON ответ...`);
             const data = await response.json();
-            console.log(`✅ Ответ на запрос генерации пула распаршен: ${data}`);
+            console.log(`✅ Ответ распарсен:`, data);
             
             if (!data.success) {
                 throw new Error(data.error || 'Failed to generate pool');
@@ -85,6 +131,7 @@ export default class SessionPoolManager {
             };
         } catch (error) {
             console.error('❌ Ошибка загрузки пула:', error);
+            console.error('❌ Stack trace:', error.stack);
             throw error;
         }
     }
@@ -108,6 +155,8 @@ export default class SessionPoolManager {
                 });
 
                 if (!response.ok) {
+                    const errorText = await response.text().catch(() => '');
+                    console.error(`❌ Ошибка ${response.status}:`, errorText);
                     throw new Error(`HTTP error: ${response.status}`);
                 }
 
@@ -136,7 +185,7 @@ export default class SessionPoolManager {
 
     async resetHistoryAPI(userId) {
         try {
-            const response = await fetch('api/reset-history', {
+            const response = await fetch('api/reset-history.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -145,6 +194,8 @@ export default class SessionPoolManager {
             });
 
             if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`❌ Ошибка ${response.status}:`, errorText);
                 throw new Error(`HTTP error: ${response.status}`);
             }
 
@@ -167,6 +218,8 @@ export default class SessionPoolManager {
         if (!userId) {
             throw new Error('User ID не найден');
         }
+        
+        console.log(`👤 User ID: ${userId}`);
 
         try {
             const { videos, remainingCount } = await this.fetchPoolFromAPI(userId, this.POOL_SIZE);
@@ -228,9 +281,7 @@ export default class SessionPoolManager {
                 try {
                     const result = await this.nextPoolCache;
                     
-                    // Не сбрасываем флаг здесь - это делает сам промис
-                    
-                    // ✅ Очищаем кеш после использования
+                    // Очищаем кеш после использования
                     this.nextPoolCache = null;
                     
                     if (result.isEmpty) {
@@ -242,7 +293,7 @@ export default class SessionPoolManager {
                     return { isEmpty: false, poolSize: result.videos.length };
                 } catch (error) {
                     console.error('❌ Ошибка использования предзагруженного пула:', error);
-                    // ✅ При ошибке очищаем кеш и флаг
+                    // При ошибке очищаем кеш и флаг
                     this.nextPoolCache = null;
                     this.isPreloadingNextPool = false;
                 }
@@ -314,7 +365,7 @@ export default class SessionPoolManager {
         
         this.nextPoolCache = this.fetchPoolFromAPI(userId, this.POOL_SIZE)
             .then(({ videos, remainingCount }) => {
-                console.log('✅ Следующий пул предзагружен');
+                console.log(`✅ Следующий пул предзагружен: ${videos.length} видео`);
                 this.isPreloadingNextPool = false;
                 return {
                     isEmpty: videos.length === 0,
@@ -324,34 +375,43 @@ export default class SessionPoolManager {
             })
             .catch(error => {
                 console.error('❌ Ошибка предзагрузки следующего пула:', error);
-            
-                // ✅ Сбрасываем флаг и кеш при ошибке
+                
+                // Сбрасываем флаг и кеш при ошибке
                 this.isPreloadingNextPool = false;
                 this.nextPoolCache = null;
                 
-                // ✅ ВАЖНО: Не пробрасываем ошибку дальше, чтобы не сломать moveToNext
-                // Вместо этого возвращаем пустой результат
+                // Не пробрасываем ошибку дальше, возвращаем пустой результат
                 return {
                     isEmpty: false,
                     videos: [],
                     remainingCount: 0
                 };
-            })
-            .finally(() => {
-                this.isPreloadingNextPool = false;
             });
     }
 
-    async markAsWatched(videoId) {
+    /**
+     * Accepts either a videoId (id) or filename.
+     * Resolves to the canonical videoId and sends mark-watched to backend.
+     * Non-blocking for UI (returns true immediately and retries async).
+     */
+    async markAsWatched(videoIdentifier) {
         const userId = this.telegramAuth.getUserId();
         if (!userId) {
             console.error('❌ User ID не найден');
             return false;
         }
 
+        // Resolve identifier -> videoId if possible
+        let resolvedId = this.resolveVideoId(videoIdentifier);
+        if (!resolvedId) {
+            console.warn(`⚠️ Не удалось разрешить идентификатор в pool: ${videoIdentifier}. Попробуем отправить как есть.`);
+            resolvedId = String(videoIdentifier); // fall back
+        } else {
+            console.log(`🔁 Разрешён videoId для '${videoIdentifier}' → ${resolvedId}`);
+        }
+
         // Асинхронно отправляем на сервер (не блокируем UI)
-        console.info('trying to mark watched video with id:', videoId, 'for user with idz:', userId);
-        this.markAsWatchedAPI(videoId, userId).catch(error => {
+        this.markAsWatchedAPI(resolvedId, userId).catch(error => {
             console.error('❌ Ошибка отправки просмотра:', error);
         });
 
@@ -393,16 +453,6 @@ export default class SessionPoolManager {
 
         // Отменяем предзагрузку, если идёт
         this.cancelPreload();
-        
-        // Отменяем предзагрузку, если идёт
-        if (this.isPreloadingNextPool) {
-            this.isPreloadingNextPool = false;
-            this.nextPoolCache = null;
-            console.log('🚫 Предзагрузка отменена');
-        }
-        
-        // sessionStorage НЕ очищаем - он живет до закрытия вкладки
-        // Это позволяет восстановить состояние при случайной перезагрузке
         
         console.log('✅ SessionPoolManager cleanup завершен');
     }
