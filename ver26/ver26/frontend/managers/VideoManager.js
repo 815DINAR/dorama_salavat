@@ -385,16 +385,21 @@ export default class VideoManager {
                     }
                 }
 
-                // ===== ПРЕДЗАГРУЗКА СЛЕДУЮЩЕГО =====
-                setTimeout(async () => {
-                    if (this.videoPreloader) {
-                        if (this.usePoolMode && this.sessionPoolManager) {
-                            await this.preloadNextFromPool();
-                        } else {
-                            await this.videoPreloader.preloadNextVideo(this.currentOrderIndex, this.videoOrder, this.videos);
+                // ===== НЕМЕДЛЕННАЯ ПРЕДЗАГРУЗКА СЛЕДУЮЩЕГО =====
+                if (this.videoPreloader) {
+                    // Fire-and-forget - не блокируем UI
+                    (async () => {
+                        try {
+                            if (this.usePoolMode && this.sessionPoolManager) {
+                                await this.preloadNextFromPool();
+                            } else {
+                                await this.videoPreloader.preloadNextVideo(this.currentOrderIndex, this.videoOrder, this.videos);
+                            }
+                        } catch (error) {
+                            console.error('❌ Ошибка предзагрузки:', error);
                         }
-                    }
-                }, 500);
+                    })();
+                }
 
                 // Обновление UI
                 if (videoTitle) videoTitle.textContent = videoData.title || 'Без названия';

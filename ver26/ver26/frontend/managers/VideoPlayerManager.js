@@ -76,7 +76,7 @@ export default class VideoPlayerManager {
                     console.log(`📊 Буфер: ${bufferedEnd.toFixed(1)}с`);
 
                     // ✅ Требуем минимум 3 секунды буфера
-                    if (bufferedEnd >= 3 || inactivePlayer.readyState >= 3) {
+                    if (bufferedEnd >= 2 || inactivePlayer.readyState >= 3) {
                         this.isNextVideoReady = true;
                         cleanup();
                         console.log('✅ Следующее видео готово');
@@ -115,7 +115,7 @@ export default class VideoPlayerManager {
                         resolve(false);
                     }
                 }
-            }, 8000); // ✅ 8 секунд вместо 5
+            }, 4000); // ✅ 8 секунд вместо 5
 
             inactivePlayer.src = src;
             inactivePlayer.preload = 'auto';
