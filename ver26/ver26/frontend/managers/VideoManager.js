@@ -303,6 +303,21 @@ export default class VideoManager {
                 // WatchTracker теперь только отслеживает UI; пометка просмотра — здесь, в VideoManager
                 watchTracker.resetWatchTimer();
 
+
+                // помечаем просмотр сразу, как только видео подготовлено и пользователь на главной вкладке
+                if (this.usePoolMode && this.sessionPoolManager && currentTab === 'main') {
+                    try {
+                        if (!this.sessionPoolManager.isMarked(canonicalId)) {
+                            // fire-and-forget, sessionPoolManager делает дедуп/ retry
+                            this.sessionPoolManager.markAsWatched(canonicalId).catch(e => {
+                                console.warn('⚠️ Ошибка пометки просмотра (optimistic):', e);
+                            });
+                        }
+                    } catch (e) {
+                        console.error('❌ Ошибка при проверке/отправке пометки просмотра:', e);
+                    }
+                }
+
                 // ===== Если есть готовый next и переключение происходит мгновенно =====
                 const isNextVideoReady = this.videoPlayerManager.isNextReady();
                 const nextVideoData = this.videoPlayerManager.getNextVideoData();
@@ -311,19 +326,6 @@ export default class VideoManager {
                     console.log('🚀 МГНОВЕННОЕ ПЕРЕКЛЮЧЕНИЕ');
 
                     await this.videoPlayerManager.switchToNextVideo();
-
-                    // После того, как видео стало активным — помечаем просмотр (fire-and-forget)
-                    if (this.usePoolMode && this.sessionPoolManager) {
-                        try {
-                            if (!this.sessionPoolManager.isMarked(canonicalId)) {
-                                this.sessionPoolManager.markAsWatched(canonicalId).catch(e => {
-                                    console.warn('⚠️ Ошибка пометки просмотра (optimistic):', e);
-                                });
-                            }
-                        } catch (e) {
-                            console.error('❌ Ошибка при попытке пометить видео после switchToNextVideo:', e);
-                        }
-                    }
 
                     if (currentTab === 'main' && hasFirstClickOccurred) {
                         // WatchTracker can still track UI state (no network)
