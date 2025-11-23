@@ -293,10 +293,10 @@ export default class SessionPoolManager {
             if (this.nextPoolCache) {
                 console.log('⚡ Используем предзагруженный пул');
                 try {
-                    const result = await this.nextPoolCache;
+                    const cachePromise = this.nextPoolCache;
+                    this.nextPoolCache = null; // Clear immediately to prevent reuse
                     
-                    // Очищаем кеш после использования
-                    this.nextPoolCache = null;
+                    const result = await cachePromise;
                     
                     if (result.isEmpty) {
                         return { isEmpty: true };
@@ -320,6 +320,7 @@ export default class SessionPoolManager {
 
         // Проверяем порог предзагрузки
         if (currentIndex >= pool.length * this.PRELOAD_THRESHOLD && !this.isPreloadingNextPool) {
+            this.isPreloadingNextPool = true; // Set flag immediately
             console.log('🔄 Запускаем предзагрузку следующего пула...');
             this.preloadNextPool();
         }
@@ -372,8 +373,6 @@ export default class SessionPoolManager {
         }
 
         console.log('🚀 Запуск предзагрузки следующего пула...');
-
-        this.isPreloadingNextPool = true;
         
         const userId = this.telegramAuth.getUserId();
         
@@ -427,7 +426,7 @@ export default class SessionPoolManager {
         // Асинхронно отправляем на сервер (не блокируем UI)
         this.markAsWatchedAPI(resolvedId, userId).catch(error => {
             console.error('❌ Ошибка отправки просмотра:', error);
-        });
+        }).then(_ => { this.markedVideoIds.add(String(resolvedId)); });
 
         return true;
     }
@@ -451,6 +450,7 @@ export default class SessionPoolManager {
     clearPool() {
         sessionStorage.removeItem('currentPool');
         sessionStorage.removeItem('currentIndex');
+        this.markedVideoIds.clear();
         console.log('🗑️ Пул очищен');
     }
 
