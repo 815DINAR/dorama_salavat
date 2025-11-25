@@ -124,160 +124,150 @@ export default class VideoPlayerManager {
     }
 
     async switchToNextVideo() {
-        // ✅ Защита от двойного переключения
+        // Защита от двойного переключения
         if (this.isSwitching) {
             console.warn('⚠️ Переключение уже идет');
             return null;
         }
-
+    
         this.isSwitching = true;
-
+    
         try {
             const current = this.getActivePlayer();
             const next = this.getInactivePlayer();
-
-            console.log(`🔄 Переключение: ${this.activePlayer} → ${this.activePlayer === 'current' ? 'next' : 'current'}`);
-
-            // ===== ✅ ДОБАВЬ ЭТУ ПРОВЕРКУ СЮДА =====
+    
+            console.log(`🔄 Переключение видео`);
+    
+            // ===== ШАГ 1: ЖДЁМ ГОТОВНОСТИ СЛЕДУЮЩЕГО ВИДЕО (ОДИН РАЗ) =====
             if (next.readyState < 2) {
-                console.warn('⚠️ Видео не готово, ждем...');
-                await new Promise((resolve) => {
-                    const onReady = () => {
-                        console.log('✅ Видео готово');
-                        next.removeEventListener('loadeddata', onReady);
-                        resolve();
-                    };
-
-                    next.addEventListener('loadeddata', onReady, { once: true });
-
-                    // Таймаут 400ms
-                    setTimeout(() => {
-                        next.removeEventListener('loadeddata', onReady);
-                        console.log('⏱️ Таймаут ожидания');
-                        resolve();
-                    }, 400);
-                });
+                console.log('⏳ Ожидаем загрузку...');
+                await this.waitForVideoReady(next, 2000); // Макс 2 секунды
             }
-            // ===== КОНЕЦ ДОБАВЛЕНИЯ =====
-
-            // ===== ШАГ 1: ПОЛНАЯ ОСТАНОВКА ТЕКУЩЕГО =====
-            console.log('⏹️ Останавливаем текущее видео');
+    
+            // ===== ШАГ 2: ОСТАНАВЛИВАЕМ ТЕКУЩЕЕ =====
             current.pause();
             current.muted = true;
             current.volume = 0;
-
-            // ✅ Ждем, пока текущее точно остановится
-            await new Promise(resolve => setTimeout(resolve, 50));
-
-            // ===== ШАГ 2: ПОДГОТОВКА НОВОГО =====
-            console.log('🔊 Подготовка нового видео');
-
-            // Проверяем готовность
-            if (next.readyState < 2) {
-                console.warn('⚠️ Видео не готово, ждем...');
-                await new Promise((resolve) => {
-                    const checkReady = setInterval(() => {
-                        if (next.readyState >= 2) {
-                            clearInterval(checkReady);
-                            resolve();
-                        }
-                    }, 100);
-
-                    setTimeout(() => {
-                        clearInterval(checkReady);
-                        resolve();
-                    }, 2000);
-                });
-            }
-
-            // Устанавливаем звук
+    
+            // ===== ШАГ 3: ГОТОВИМ СЛЕДУЮЩЕЕ =====
             next.muted = false;
             next.volume = 1.0;
-
-            // ===== ШАГ 3: ВИЗУАЛЬНОЕ ПЕРЕКЛЮЧЕНИЕ =====
-            console.log('🎨 Визуальное переключение');
-
+            next.currentTime = 0;
+    
+            // ===== ШАГ 4: ВИЗУАЛЬНОЕ ПЕРЕКЛЮЧЕНИЕ =====
             current.style.opacity = '0';
             current.style.visibility = 'hidden';
             current.style.zIndex = '1';
             current.style.pointerEvents = 'none';
-
+    
             next.style.visibility = 'visible';
             next.style.opacity = '1';
             next.style.zIndex = '2';
             next.style.pointerEvents = 'auto';
-
-            // ===== ШАГ 4: ПЕРЕКЛЮЧАЕМ АКТИВНЫЙ =====
+    
+            // ===== ШАГ 5: ПЕРЕКЛЮЧАЕМ АКТИВНОГО =====
             this.activePlayer = this.activePlayer === 'current' ? 'next' : 'current';
-
-            // ===== ШАГ 5: ЗАПУСК НОВОГО =====
+    
+            // ===== ШАГ 6: ЗАПУСКАЕМ ВОСПРОИЗВЕДЕНИЕ =====
             if (window.hasFirstClickOccurred) {
-                console.log('▶️ Запускаем новое видео');
-
-                // Сбрасываем на начало
-                next.currentTime = 0;
-
-                try {
-                    await next.play();
-                    console.log('✅ Новое видео запущено');
-
-                    // Проверка через 200ms
-                    setTimeout(() => {
-                        if (next.paused) {
-                            console.error('❌ Видео остановилось, перезапускаем');
-                            next.play().catch(e => console.error('❌ Ошибка перезапуска:', e));
-                        }
-
-                        if (next.muted || next.volume === 0) {
-                            console.error('❌ Звук выключен, включаем');
-                            next.muted = false;
-                            next.volume = 1.0;
-                        }
-
-                        console.log('🔊 Состояние после переключения:', {
-                            paused: next.paused,
-                            muted: next.muted,
-                            volume: next.volume,
-                            currentTime: next.currentTime,
-                            readyState: next.readyState
-                        });
-                    }, 200);
-
-                } catch (error) {
-                    console.error('❌ Ошибка запуска:', error);
-
-                    // Повторная попытка
-                    next.muted = false;
-                    next.volume = 1.0;
-                    next.currentTime = 0;
-
-                    try {
-                        await next.play();
-                        console.log('✅ Повторная попытка успешна');
-                    } catch (retryError) {
-                        console.error('❌ Повторная попытка не удалась:', retryError);
+                await this.playVideo(next);
+            }
+    
+            // ===== ШАГ 7: ОЧИЩАЕМ СТАРЫЙ ПЛЕЕР (В ФОНЕ) =====
+            this.cleanupPlayer(current);
+    
+            this.isNextVideoReady = false;
+            return this.nextVideoData;
+    
+        } finally {
+            // Снимаем блокировку сразу (без задержки)
+            this.isSwitching = false;
+        }
+    }
+    
+    // ===== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ =====
+    
+    /**
+     * Ожидает готовности видео с таймаутом
+     */
+    async waitForVideoReady(videoElement, timeout = 2000) {
+        return new Promise((resolve) => {
+            if (videoElement.readyState >= 2) {
+                resolve();
+                return;
+            }
+    
+            const onReady = () => {
+                cleanup();
+                resolve();
+            };
+    
+            const onTimeout = () => {
+                cleanup();
+                console.warn('⏱️ Таймаут ожидания готовности');
+                resolve(); // Не блокируем, продолжаем
+            };
+    
+            const timeoutId = setTimeout(onTimeout, timeout);
+    
+            const cleanup = () => {
+                videoElement.removeEventListener('loadeddata', onReady);
+                videoElement.removeEventListener('canplay', onReady);
+                clearTimeout(timeoutId);
+            };
+    
+            videoElement.addEventListener('loadeddata', onReady, { once: true });
+            videoElement.addEventListener('canplay', onReady, { once: true });
+        });
+    }
+    
+    /**
+     * Запускает воспроизведение с автоматическим retry
+     */
+    async playVideo(videoElement, maxRetries = 2) {
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
+            try {
+                await videoElement.play();
+                console.log('✅ Видео запущено');
+    
+                // Проверка через 100ms
+                setTimeout(() => {
+                    if (videoElement.paused || videoElement.muted || videoElement.volume === 0) {
+                        console.warn('⚠️ Корректируем воспроизведение');
+                        videoElement.muted = false;
+                        videoElement.volume = 1.0;
+                        videoElement.play().catch(() => {});
                     }
+                }, 100);
+    
+                return true;
+            } catch (error) {
+                console.error(`❌ Попытка ${attempt + 1}/${maxRetries}:`, error);
+                
+                if (attempt < maxRetries - 1) {
+                    // Перед повторной попыткой сбрасываем состояние
+                    videoElement.muted = false;
+                    videoElement.volume = 1.0;
+                    videoElement.currentTime = 0;
+                    await new Promise(resolve => setTimeout(resolve, 100));
                 }
             }
-
-            // ===== ШАГ 6: ОЧИСТКА СТАРОГО =====
-            setTimeout(() => {
-                console.log('🗑️ Очищаем старый плеер');
-                current.removeAttribute('src');
-                current.load();
-                current.currentTime = 0;
-            }, 500);
-
-            this.isNextVideoReady = false;
-
-            return this.nextVideoData;
-
-        } finally {
-            // ✅ Снимаем блокировку через 300ms
-            setTimeout(() => {
-                this.isSwitching = false;
-            }, 300);
         }
+        
+        console.error('❌ Не удалось запустить видео');
+        return false;
+    }
+    
+    /**
+     * Очищает старый плеер (в фоне, не блокируя)
+     */
+    cleanupPlayer(videoElement) {
+        setTimeout(() => {
+            videoElement.removeAttribute('src');
+            videoElement.load();
+            videoElement.currentTime = 0;
+            console.log('🗑️ Плеер очищен');
+        }, 300); // Небольшая задержка для плавности
     }
 
     getNextVideoData() {
