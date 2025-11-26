@@ -12,6 +12,13 @@ class TelegramAuth {
         this.lastActivityTime = Date.now();
         this.activityInterval = null;
         this.isAuthorized = false;
+
+        // Кэширование userData
+        this.userDataCache = null;
+        this.userDataCacheTime = 0;
+        this.USER_DATA_CACHE_TTL = 30000; // 30 секунд
+        this.isFetchingUserData = false; // Защита от параллельных запросов
+        this.pendingUserDataRequests = []; // Очередь запросов
     }
 
     // Инициализация авторизации
@@ -216,15 +223,35 @@ class TelegramAuth {
     }
 
     // Получение данных пользователя с сервера
-    async getUserData() {
+    async getUserData(forceRefresh = false) {
         if (!this.user) return null;
 
+        const now = Date.now();
+        const cacheAge = now - this.userDataCacheTime;
+
+        // Если есть свежий кэш и не требуется принудительное обновление
+        if (!forceRefresh && this.userDataCache && cacheAge < this.USER_DATA_CACHE_TTL) {
+            console.log(`📦 Используем кэш userData (возраст: ${Math.round(cacheAge / 1000)}с)`);
+            return this.userDataCache;
+        }
+
+        // Если запрос уже идёт, добавляем в очередь
+        if (this.isFetchingUserData) {
+            console.log('⏳ Ожидаем завершения текущего запроса userData');
+            return new Promise((resolve) => {
+                this.pendingUserDataRequests.push(resolve);
+            });
+        }
+
+        this.isFetchingUserData = true;
+
         try {
-            const response = await fetch(`auth/get_user_data.php?cachebuster=${Date.now()}`, {
+            console.log('🔄 Загружаем свежие данные пользователя...');
+
+            const response = await fetch('auth/get_user_data.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Cache-Control': 'no-cache',
                 },
                 body: JSON.stringify({
                     user_id: this.user.id
@@ -233,14 +260,45 @@ class TelegramAuth {
 
             const result = await response.json();
             if (result.success) {
-                console.log('📊 Получены свежие данные пользователя');
-                return result.user_data;
+                // Обновляем кэш
+                this.userDataCache = result.user_data;
+                this.userDataCacheTime = Date.now();
+                
+                console.log('✅ Данные пользователя обновлены и закэшированы');
+
+                // Разрешаем все ожидающие промисы
+                this.pendingUserDataRequests.forEach(resolve => resolve(this.userDataCache));
+                this.pendingUserDataRequests = [];
+
+                return this.userDataCache;
             }
         } catch (error) {
             console.error('❌ Ошибка получения данных пользователя:', error);
+
+            // Возвращаем старый кэш, если есть
+            if (this.userDataCache) {
+                console.warn('⚠️ Используем устаревший кэш из-за ошибки');
+                return this.userDataCache;
+            }
+        } finally {
+            this.isFetchingUserData = false;
         }
 
         return null;
+    }
+
+    // метод для принудительного обновления кэша
+    async refreshUserData() {
+        console.log('🔄 Принудительное обновление userData');
+        this.invalidateUserDataCache();
+        return await this.getUserData(true);
+    }
+
+    // метод для инвалидации кэша при изменении данных
+    invalidateUserDataCache() {
+        console.log('🗑️ Инвалидация кэша userData');
+        this.userDataCache = null;
+        this.userDataCacheTime = 0;
     }
 
     // Сохранение избранного
@@ -261,6 +319,12 @@ class TelegramAuth {
             });
 
             const result = await response.json();
+
+            if (result.success) {
+                // ✅ Инвалидируем кэш после изменения
+                this.invalidateUserDataCache();
+            }
+
             return result.success;
         } catch (error) {
             console.error('❌ Ошибка обновления избранного:', error);
@@ -293,6 +357,7 @@ class TelegramAuth {
             const result = await response.json();
             if (result.success) {
                 console.log('✅ Реакция обновлена:', action, videoId);
+                this.invalidateUserDataCache();
             }
             return result.success;
         } catch (error) {
