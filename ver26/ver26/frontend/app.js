@@ -732,7 +732,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   if (modalClose) {
-    modalClose. addEventListener('touchstart', (e) => {
+    modalClose.addEventListener('touchstart', (e) => {
       e.preventDefault();
     }, { passive: false });
 
