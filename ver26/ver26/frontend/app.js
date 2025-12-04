@@ -283,6 +283,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
       };
       
+      firstClickOverlay.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+      }, { passive: false });
       firstClickOverlay.addEventListener('click', handleOverlayClick);
       firstClickOverlay.addEventListener('touchend', handleOverlayClick);
   }
@@ -440,6 +443,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       handler(e);
     };
     
+    button.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+    }, { passive: false });
     button.addEventListener('click', handleClick);
     button.addEventListener('touchend', (e) => {
       e.preventDefault();
@@ -708,6 +714,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   if (descriptionButton) {
+    descriptionButton.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+    }, { passive: false });
+
     descriptionButton.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -722,6 +732,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   if (modalClose) {
+    modalClose.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+    }, { passive: false });
+
     modalClose.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
