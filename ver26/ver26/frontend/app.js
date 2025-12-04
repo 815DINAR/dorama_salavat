@@ -441,6 +441,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     
     button.addEventListener('click', handleClick);
+    button.addEventListener('touchend', (e) => {
+      e.preventDefault();
+    });
   }
 
   window.videos = videos;
